@@ -48,7 +48,7 @@ class AvatarEditorScreen extends StatelessWidget {
               );
               if (shouldSave == null) return;
               if (shouldSave) {
-                await viewModel.saveChanges();
+                if (!await viewModel.saveChanges()) return;
               } else {
                 viewModel.discardChanges();
               }
@@ -64,7 +64,17 @@ class AvatarEditorScreen extends StatelessWidget {
                   config: draft,
                   explorerName: viewModel.explorerName,
                   hasUnsavedChanges: viewModel.hasUnsavedChanges,
+                  onNameChanged: viewModel.setExplorerName,
                 ),
+                if (viewModel.errorMessage != null) ...[
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    viewModel.errorMessage!,
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.danger,
+                    ),
+                  ),
+                ],
                 const SizedBox(height: AppSpacing.md),
                 AvatarOptionSelectorCard<AvatarPresentation>(
                   title: 'Presentación',
@@ -175,10 +185,10 @@ class AvatarEditorScreen extends StatelessWidget {
                   title: 'Ropa de expedición',
                   selectedValue: draft.outfit,
                   onSelected: viewModel.setOutfit,
-                  options: const <AvatarChoiceItem<AvatarOutfit>>[
+                  options: <AvatarChoiceItem<AvatarOutfit>>[
                     AvatarChoiceItem(
                       value: AvatarOutfit.tshirt,
-                      label: 'Camiseta',
+                      label: 'Camiseta de manga corta',
                       swatchColor: Color(0xFF29E1B4),
                     ),
                     AvatarChoiceItem(
@@ -187,23 +197,71 @@ class AvatarEditorScreen extends StatelessWidget {
                       swatchColor: Color(0xFFD64045),
                     ),
                     AvatarChoiceItem(
-                      value: AvatarOutfit.navyPolo,
-                      label: 'Polo azul',
+                      value: AvatarOutfit.schoolTracksuit,
+                      label: 'Chándal del colegio',
                       swatchColor: Color(0xFF17257C),
                     ),
+                    if (viewModel.ownedCosmetics.contains('explorer_jacket'))
+                      const AvatarChoiceItem(
+                        value: AvatarOutfit.explorerJacket,
+                        label: 'Chaqueta exploradora',
+                        swatchColor: Color(0xFF19D88D),
+                      ),
                   ],
                 ),
+                if (viewModel.ownedCosmetics.contains('compass_badge')) ...[
+                  const SizedBox(height: AppSpacing.sm),
+                  AvatarOptionSelectorCard<AvatarAccessory>(
+                    title: 'Accesorios',
+                    selectedValue: draft.accessory,
+                    onSelected: viewModel.setAccessory,
+                    options: const <AvatarChoiceItem<AvatarAccessory>>[
+                      AvatarChoiceItem(
+                        value: AvatarAccessory.none,
+                        label: 'Sin accesorio',
+                        icon: Icons.face_rounded,
+                      ),
+                      AvatarChoiceItem(
+                        value: AvatarAccessory.compassBadge,
+                        label: 'Insignia de brújula',
+                        icon: Icons.explore_rounded,
+                      ),
+                    ],
+                  ),
+                ],
+                if (viewModel.ownedCosmetics.contains('golden_avatar')) ...[
+                  const SizedBox(height: AppSpacing.sm),
+                  AvatarOptionSelectorCard<AvatarSpecialStyle>(
+                    title: 'Avatar especial',
+                    selectedValue: draft.specialStyle,
+                    onSelected: viewModel.setSpecialStyle,
+                    options: const <AvatarChoiceItem<AvatarSpecialStyle>>[
+                      AvatarChoiceItem(
+                        value: AvatarSpecialStyle.classic,
+                        label: 'Explorador clásico',
+                        icon: Icons.person_rounded,
+                      ),
+                      AvatarChoiceItem(
+                        value: AvatarSpecialStyle.goldenExplorer,
+                        label: 'Explorador dorado',
+                        swatchColor: Color(0xFFF2B544),
+                      ),
+                    ],
+                  ),
+                ],
                 const SizedBox(height: AppSpacing.lg),
                 AppPrimaryButton(
                   label: AppStrings.avatarSaveButton,
                   icon: Icons.check_circle_rounded,
                   isLoading: viewModel.isSaving,
-                  onPressed: () async {
-                    final ok = await viewModel.saveChanges();
-                    if (ok) {
-                      onBackOrSaved();
-                    }
-                  },
+                  onPressed: viewModel.canSave
+                      ? () async {
+                          final ok = await viewModel.saveChanges();
+                          if (ok) {
+                            onBackOrSaved();
+                          }
+                        }
+                      : null,
                 ),
               ],
             ),
@@ -214,16 +272,50 @@ class AvatarEditorScreen extends StatelessWidget {
   }
 }
 
-class _AvatarLivePreviewHeader extends StatelessWidget {
+class _AvatarLivePreviewHeader extends StatefulWidget {
   const _AvatarLivePreviewHeader({
     required this.config,
     required this.explorerName,
     required this.hasUnsavedChanges,
+    required this.onNameChanged,
   });
 
   final AvatarConfig config;
   final String explorerName;
   final bool hasUnsavedChanges;
+  final ValueChanged<String> onNameChanged;
+
+  @override
+  State<_AvatarLivePreviewHeader> createState() =>
+      _AvatarLivePreviewHeaderState();
+}
+
+class _AvatarLivePreviewHeaderState extends State<_AvatarLivePreviewHeader> {
+  late final TextEditingController _nameController;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.explorerName);
+  }
+
+  @override
+  void didUpdateWidget(covariant _AvatarLivePreviewHeader oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.explorerName != widget.explorerName &&
+        _nameController.text != widget.explorerName) {
+      _nameController.value = TextEditingValue(
+        text: widget.explorerName,
+        selection: TextSelection.collapsed(offset: widget.explorerName.length),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -232,7 +324,7 @@ class _AvatarLivePreviewHeader extends StatelessWidget {
       child: Row(
         children: [
           ExplorerAvatarWidget(
-            config: config,
+            config: widget.config,
             size: 112,
             backgroundColor: AppColors.surfaceMuted,
           ),
@@ -242,19 +334,33 @@ class _AvatarLivePreviewHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 StatusBadge(
-                  label: hasUnsavedChanges
+                  label: widget.hasUnsavedChanges
                       ? 'Cambios en vista previa'
                       : 'Personaje guardado',
-                  variant: hasUnsavedChanges
+                  variant: widget.hasUnsavedChanges
                       ? StatusBadgeVariant.warning
                       : StatusBadgeVariant.success,
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  'Explorador $explorerName',
+                  'Nombre del explorador',
+                  style: AppTypography.labelMedium.copyWith(
+                    color: AppColors.textMuted,
+                  ),
+                ),
+                TextFormField(
+                  maxLength: 24,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: const InputDecoration(
+                    hintText: 'Escribe un nombre',
+                    counterText: '',
+                    isDense: true,
+                  ),
+                  controller: _nameController,
                   style: AppTypography.headlineSmall.copyWith(
                     color: AppColors.brandPrimary,
                   ),
+                  onChanged: widget.onNameChanged,
                 ),
                 const SizedBox(height: 4),
                 Text(

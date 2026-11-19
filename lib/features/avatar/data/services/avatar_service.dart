@@ -9,8 +9,17 @@ class AvatarService {
 
   UserModel getCurrentUser() => _store.currentUser;
 
-  Future<AvatarConfig> saveAvatarConfig(AvatarConfig config) async {
-    _store.updateAvatarConfig(config);
-    return _store.currentUser.avatarConfig;
+  Set<String> getOwnedCosmetics() {
+    return _store.inventoryCounts.keys
+        .where((itemId) => (_store.inventoryCounts[itemId] ?? 0) > 0)
+        .toSet();
+  }
+
+  Future<UserModel> saveAvatarConfig({
+    required AvatarConfig config,
+    required String displayName,
+  }) async {
+    _store.updateAvatarConfig(config, displayName: displayName);
+    return _store.currentUser;
   }
 }

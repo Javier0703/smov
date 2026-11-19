@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+enum InventoryItemCategory { aid, outfit, accessory, specialAvatar }
+
 /// Modelo de un objeto de ayuda en `Mi mochila`.
 class InventoryItemModel {
   const InventoryItemModel({
@@ -10,6 +12,8 @@ class InventoryItemModel {
     required this.costCoins,
     required this.ownedCount,
     required this.icon,
+    this.category = InventoryItemCategory.aid,
+    this.requiredMedalNumber,
   });
 
   final String id;
@@ -19,10 +23,21 @@ class InventoryItemModel {
   final int costCoins;
   final int ownedCount;
   final IconData icon;
+  final InventoryItemCategory category;
+  final int? requiredMedalNumber;
 
   bool canAfford(int userCoins) => userCoins >= costCoins;
   int missingCoins(int userCoins) =>
       userCoins >= costCoins ? 0 : costCoins - userCoins;
+  bool get isOneTimePurchase => category != InventoryItemCategory.aid;
+  bool get isOwned => isOneTimePurchase && ownedCount > 0;
+
+  String get categoryLabel => switch (category) {
+    InventoryItemCategory.aid => 'Ayuda',
+    InventoryItemCategory.outfit => 'Ropa',
+    InventoryItemCategory.accessory => 'Accesorio',
+    InventoryItemCategory.specialAvatar => 'Avatar especial',
+  };
 }
 
 /// Comprobante de canje exitoso (`¡Lupa en tu mochila!`).

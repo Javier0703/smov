@@ -29,6 +29,16 @@ class InventoryViewModel extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   UserModel get currentUser => _repository.getCurrentUser();
   int get coinsBalance => currentUser.coins;
+  Set<int> get unlockedMedalNumbers => _repository.getUnlockedMedalNumbers();
+  int get unlockedMedalCount => _repository.getUnlockedMedalNumbers().length;
+
+  bool canRedeem(InventoryItemModel item) {
+    final medals = _repository.getUnlockedMedalNumbers();
+    return !item.isOwned &&
+        item.canAfford(coinsBalance) &&
+        (item.requiredMedalNumber == null ||
+            medals.contains(item.requiredMedalNumber));
+  }
 
   void refresh() {
     final result = _repository.loadInventoryItems();

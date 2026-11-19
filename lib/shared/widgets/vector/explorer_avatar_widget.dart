@@ -124,6 +124,9 @@ class _ExplorerAvatarPainter extends CustomPainter {
   }
 
   Color get _outfitColor {
+    if (config.specialStyle == AvatarSpecialStyle.goldenExplorer) {
+      return const Color(0xFFF2B544);
+    }
     switch (config.outfit) {
       case AvatarOutfit.tshirt:
         return const Color(0xFF29E1B4);
@@ -131,10 +134,17 @@ class _ExplorerAvatarPainter extends CustomPainter {
         return const Color(0xFFD64045);
       case AvatarOutfit.navyPolo:
         return const Color(0xFF17257C);
+      case AvatarOutfit.schoolTracksuit:
+        return const Color(0xFF17257C);
+      case AvatarOutfit.explorerJacket:
+        return const Color(0xFF19D88D);
     }
   }
 
   Color get _scarfColor {
+    if (config.specialStyle == AvatarSpecialStyle.goldenExplorer) {
+      return const Color(0xFF17257C);
+    }
     switch (config.outfit) {
       case AvatarOutfit.tshirt:
         return const Color(0xFFD64045);
@@ -142,6 +152,10 @@ class _ExplorerAvatarPainter extends CustomPainter {
         return const Color(0xFFF39C12);
       case AvatarOutfit.navyPolo:
         return const Color(0xFF19D88D);
+      case AvatarOutfit.schoolTracksuit:
+        return const Color(0xFF29E1B4);
+      case AvatarOutfit.explorerJacket:
+        return const Color(0xFF17257C);
     }
   }
 
@@ -328,6 +342,17 @@ class _ExplorerAvatarPainter extends CustomPainter {
         ..color = _outfitColor
         ..style = PaintingStyle.fill,
     );
+    if (config.outfit == AvatarOutfit.schoolTracksuit ||
+        config.outfit == AvatarOutfit.explorerJacket) {
+      final stripePaint = Paint()
+        ..color = config.outfit == AvatarOutfit.schoolTracksuit
+            ? const Color(0xFFFFFFFF)
+            : const Color(0xFF17257C)
+        ..strokeWidth = 2.5
+        ..strokeCap = StrokeCap.round;
+      canvas.drawLine(const Offset(32, 94), const Offset(36, 109), stripePaint);
+      canvas.drawLine(const Offset(66, 94), const Offset(62, 109), stripePaint);
+    }
     canvas.drawPath(
       _scarfPath,
       Paint()
@@ -335,13 +360,28 @@ class _ExplorerAvatarPainter extends CustomPainter {
         ..style = PaintingStyle.fill,
     );
 
-    // Detalle de cuello polo o capucha según prenda
+    // Detalle de cuello y accesorio según prenda.
     if (config.outfit == AvatarOutfit.navyPolo) {
       final buttonPaint = Paint()
         ..color = Colors.white
         ..style = PaintingStyle.fill;
       canvas.drawCircle(const Offset(49, 102), 1.6, buttonPaint);
       canvas.drawCircle(const Offset(49, 106.5), 1.6, buttonPaint);
+    }
+    if (config.accessory == AvatarAccessory.compassBadge) {
+      canvas.drawCircle(
+        const Offset(57, 91),
+        5.2,
+        Paint()..color = const Color(0xFFFFD166),
+      );
+      canvas.drawCircle(
+        const Offset(57, 91),
+        3.2,
+        Paint()
+          ..color = AppColors.brandPrimary
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.2,
+      );
     }
 
     final strapPaint = Paint()
@@ -352,7 +392,9 @@ class _ExplorerAvatarPainter extends CustomPainter {
 
     // Estrella dorada en la cinta del sombrero
     final badgePaint = Paint()
-      ..color = const Color(0xFFFFD166)
+      ..color = config.specialStyle == AvatarSpecialStyle.goldenExplorer
+          ? const Color(0xFFFFFFFF)
+          : const Color(0xFFFFD166)
       ..style = PaintingStyle.fill;
     canvas.drawCircle(const Offset(49, 33.2), 3.2, badgePaint);
 

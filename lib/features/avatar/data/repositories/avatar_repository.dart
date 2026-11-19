@@ -27,12 +27,20 @@ class AvatarRepository {
     }
   }
 
-  Future<Result<AvatarConfig>> saveAvatarConfig(AvatarConfig config) async {
+  Set<String> getOwnedCosmetics() => _service.getOwnedCosmetics();
+
+  Future<Result<UserModel>> saveAvatarConfig({
+    required AvatarConfig config,
+    required String displayName,
+  }) async {
     try {
-      final saved = await _service.saveAvatarConfig(config);
-      return Success<AvatarConfig>(saved);
+      final saved = await _service.saveAvatarConfig(
+        config: config,
+        displayName: displayName,
+      );
+      return Success<UserModel>(saved);
     } catch (e) {
-      return Error<AvatarConfig>(
+      return Error<UserModel>(
         CacheFailure('No se pudo guardar el personaje: $e'),
       );
     }

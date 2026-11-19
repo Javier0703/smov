@@ -4,12 +4,14 @@ import '../../../../core/constants/app_strings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../shared/models/user_model.dart';
 import '../../../../shared/widgets/cards/app_base_card.dart';
 import '../../../../shared/widgets/cards/status_badge.dart';
 import '../../../../shared/widgets/navigation/adventure_scaffold.dart';
 import '../../../../shared/widgets/navigation/app_bottom_navigation_bar.dart';
 import '../../../../shared/widgets/navigation/app_drawer.dart';
 import '../../../../shared/widgets/navigation/app_top_bar.dart';
+import '../../../../shared/widgets/vector/explorer_avatar_widget.dart';
 import '../../../../shared/widgets/vector/spain_vector_map_widget.dart';
 import '../../../../shared/widgets/vector/stamp_postal_card_widget.dart';
 import '../../data/models/passport_entry_model.dart';
@@ -73,10 +75,12 @@ class PassportScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _PassportMapHeaderCard(
+                  user: user,
                   stampedCount: viewModel.stampedCount,
                   totalCount: entries.length,
                   stampedIds: viewModel.stampedIds,
                   selectedRegionId: viewModel.selectedRegionId,
+                  onAvatarTap: () => onNavigateRoute('/avatar'),
                   onRegionTap: (region) {
                     viewModel.selectRegion(region.id);
                     final entry = entries
@@ -125,17 +129,21 @@ class PassportScreen extends StatelessWidget {
 
 class _PassportMapHeaderCard extends StatelessWidget {
   const _PassportMapHeaderCard({
+    required this.user,
     required this.stampedCount,
     required this.totalCount,
     required this.stampedIds,
     required this.selectedRegionId,
+    required this.onAvatarTap,
     required this.onRegionTap,
   });
 
+  final UserModel user;
   final int stampedCount;
   final int totalCount;
   final Set<String> stampedIds;
   final String? selectedRegionId;
+  final VoidCallback onAvatarTap;
   final ValueChanged<SpainMapRegion> onRegionTap;
 
   @override
@@ -145,6 +153,43 @@ class _PassportMapHeaderCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          InkWell(
+            onTap: onAvatarTap,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.md),
+              child: Row(
+                children: [
+                  ExplorerAvatarWidget(
+                    config: user.avatarConfig,
+                    size: 56,
+                    backgroundColor: AppColors.surfaceMuted,
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Explorador ${user.displayName}',
+                          style: AppTypography.titleMedium.copyWith(
+                            color: AppColors.brandPrimary,
+                          ),
+                        ),
+                        Text(
+                          'Toca para editar tu personaje',
+                          style: AppTypography.bodySmall.copyWith(
+                            color: AppColors.textMuted,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.edit_rounded, color: AppColors.brandPrimary),
+                ],
+              ),
+            ),
+          ),
           Row(
             children: [
               const StatusBadge(

@@ -45,11 +45,15 @@ class RedeemConfirmScreen extends StatelessWidget {
 
         final currentCoins = viewModel.coinsBalance;
         final canAfford = item.canAfford(currentCoins);
+        final canRedeem = viewModel.canRedeem(item);
+        final hasRequiredMedal =
+            item.requiredMedalNumber == null ||
+            viewModel.unlockedMedalNumbers.contains(item.requiredMedalNumber);
         final projectedCoins = currentCoins - item.costCoins;
 
         return AdventureScaffold(
           topBar: AppTopBar(
-            title: '¿Canjear una ${item.shortName}?',
+            title: '¿Conseguir ${item.shortName}?',
             subtitle: 'Confirmación de canje en tu mochila',
             showBackButton: true,
             onBackPressed: onCancel,
@@ -136,17 +140,30 @@ class RedeemConfirmScreen extends StatelessWidget {
                         value: '$projectedCoins Brújulas',
                         isBold: true,
                       ),
+                      if (item.requiredMedalNumber != null) ...[
+                        const Divider(height: AppSpacing.md),
+                        _AccountingRow(
+                          label: 'Medalla necesaria',
+                          value: hasRequiredMedal
+                              ? 'Conseguida'
+                              : 'N.º ${item.requiredMedalNumber}',
+                        ),
+                      ],
                     ],
                   ),
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 AppPrimaryButton(
-                  label: canAfford
+                  label: item.isOwned
+                      ? 'Ya tienes este objeto'
+                      : !hasRequiredMedal
+                      ? 'Necesitas la medalla ${item.requiredMedalNumber}'
+                      : canAfford
                       ? 'Confirmar canje (-${item.costCoins} Brújulas)'
                       : 'Saldo insuficiente',
                   icon: Icons.check_circle_rounded,
                   isLoading: viewModel.isRedeeming,
-                  onPressed: canAfford
+                  onPressed: canRedeem
                       ? () async {
                           final receipt = await viewModel.confirmRedeem(
                             item.id,

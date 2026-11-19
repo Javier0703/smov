@@ -378,8 +378,11 @@ class ExpeditionStateStore extends ChangeNotifier {
       '${date.month.toString().padLeft(2, '0')}-'
       '${date.day.toString().padLeft(2, '0')}';
 
-  void updateAvatarConfig(AvatarConfig config) {
-    _currentUser = _currentUser.copyWith(avatarConfig: config);
+  void updateAvatarConfig(AvatarConfig config, {String? displayName}) {
+    _currentUser = _currentUser.copyWith(
+      avatarConfig: config,
+      displayName: displayName,
+    );
     notifyListeners();
   }
 
@@ -517,10 +520,19 @@ class ExpeditionStateStore extends ChangeNotifier {
     required String transactionId,
     required String itemId,
     required int costCoins,
+    int? requiredMedalNumber,
+    bool oneTimePurchase = false,
   }) async {
     final key = 'redeem_$transactionId';
     if (_localStorage.isKeyProcessed(key)) {
       return true;
+    }
+    if (requiredMedalNumber != null &&
+        !_unlockedMedalNumbers.contains(requiredMedalNumber)) {
+      return false;
+    }
+    if (oneTimePurchase && (_inventoryCounts[itemId] ?? 0) > 0) {
+      return false;
     }
     if (_currentUser.coins < costCoins) {
       return false;

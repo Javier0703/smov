@@ -16,6 +16,8 @@ class AvatarViewModel extends ChangeNotifier {
   AvatarConfig _savedConfig = const AvatarConfig();
   AvatarConfig _draftConfig = const AvatarConfig();
   String _explorerName = 'Alex';
+  String _savedExplorerName = 'Alex';
+  Set<String> _ownedCosmetics = const <String>{};
   bool _isSaving = false;
   String? _errorMessage;
 
@@ -24,7 +26,10 @@ class AvatarViewModel extends ChangeNotifier {
   String get explorerName => _explorerName;
   bool get isSaving => _isSaving;
   String? get errorMessage => _errorMessage;
-  bool get hasUnsavedChanges => _savedConfig != _draftConfig;
+  Set<String> get ownedCosmetics => _ownedCosmetics;
+  bool get hasUnsavedChanges =>
+      _savedConfig != _draftConfig || _savedExplorerName != _explorerName;
+  bool get canSave => _explorerName.trim().isNotEmpty && !_isSaving;
 
   void loadState() {
     final result = _repository.loadAvatarEditorState();
@@ -33,6 +38,8 @@ class AvatarViewModel extends ChangeNotifier {
         _savedConfig = data.savedConfig;
         _draftConfig = data.draftConfig;
         _explorerName = data.explorerName;
+        _savedExplorerName = data.explorerName;
+        _ownedCosmetics = _repository.getOwnedCosmetics();
         _errorMessage = null;
       case Error<AvatarEditorStateModel>(:final failure):
         _errorMessage = failure.message;
@@ -66,29 +73,72 @@ class AvatarViewModel extends ChangeNotifier {
   }
 
   void setOutfit(AvatarOutfit value) {
+    if (value == AvatarOutfit.explorerJacket &&
+        !_ownedCosmetics.contains('explorer_jacket')) {
+      return;
+    }
     _draftConfig = _draftConfig.copyWith(outfit: value);
+    notifyListeners();
+  }
+
+  void setAccessory(AvatarAccessory value) {
+    if (value == AvatarAccessory.compassBadge &&
+        !_ownedCosmetics.contains('compass_badge')) {
+      return;
+    }
+    _draftConfig = _draftConfig.copyWith(accessory: value);
+    notifyListeners();
+  }
+
+  void setSpecialStyle(AvatarSpecialStyle value) {
+    if (value == AvatarSpecialStyle.goldenExplorer &&
+        !_ownedCosmetics.contains('golden_avatar')) {
+      return;
+    }
+    _draftConfig = _draftConfig.copyWith(specialStyle: value);
+    notifyListeners();
+  }
+
+  void setExplorerName(String value) {
+    _explorerName = value;
+    _errorMessage = value.trim().isEmpty
+        ? 'Escribe un nombre para tu explorador.'
+        : null;
     notifyListeners();
   }
 
   void discardChanges() {
     _draftConfig = _savedConfig;
+    _explorerName = _savedExplorerName;
     notifyListeners();
   }
 
   Future<bool> saveChanges() async {
+    final trimmedName = _explorerName.trim();
+    if (trimmedName.isEmpty) {
+      _errorMessage = 'Escribe un nombre para tu explorador.';
+      notifyListeners();
+      return false;
+    }
+
     _isSaving = true;
     _errorMessage = null;
     notifyListeners();
 
-    final result = await _repository.saveAvatarConfig(_draftConfig);
+    final result = await _repository.saveAvatarConfig(
+      config: _draftConfig,
+      displayName: trimmedName,
+    );
     _isSaving = false;
     switch (result) {
-      case Success<AvatarConfig>(:final data):
-        _savedConfig = data;
-        _draftConfig = data;
+      case Success<UserModel>(:final data):
+        _savedConfig = data.avatarConfig;
+        _draftConfig = data.avatarConfig;
+        _savedExplorerName = data.displayName;
+        _explorerName = data.displayName;
         notifyListeners();
         return true;
-      case Error<AvatarConfig>(:final failure):
+      case Error<UserModel>(:final failure):
         _errorMessage = failure.message;
         notifyListeners();
         return false;

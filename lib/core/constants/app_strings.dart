@@ -50,8 +50,9 @@ class AppStrings {
 
   // Mochila en partida y tienda (/inventory)
   static const String inGameBackpackTitle = 'Tu mochila en esta prueba';
-  static const String inventoryScreenTitle = 'Mi mochila';
-  static const String inventoryScreenSubtitle = 'Tus Brújulas y ayudas';
+  static const String inventoryScreenTitle = 'Tienda y mochila';
+  static const String inventoryScreenSubtitle =
+      'Ropa, accesorios y ayudas para tu expedición';
   static const String itemMagnifyingGlass = 'Lupa de pistas';
   static const int itemMagnifyingGlassCost = 120;
   static const String itemHourglass = 'Reloj de arena';

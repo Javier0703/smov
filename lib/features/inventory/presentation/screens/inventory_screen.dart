@@ -70,16 +70,45 @@ class InventoryScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _CoinsBalanceHeaderCard(coins: user.coins),
+                _CoinsBalanceHeaderCard(
+                  coins: user.coins,
+                  unlockedMedalCount: viewModel.unlockedMedalCount,
+                ),
                 const SizedBox(height: AppSpacing.md),
-                for (final item in items) ...[
-                  InventoryStoreCard(
-                    item: item,
-                    userCoins: user.coins,
-                    onRedeemPressed: () => onSelectRedeemItem(item),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                ],
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final columns = constraints.maxWidth >= 1000
+                        ? 3
+                        : constraints.maxWidth >= 620
+                        ? 2
+                        : 1;
+                    final spacing = AppSpacing.sm;
+                    final cardWidth =
+                        (constraints.maxWidth - spacing * (columns - 1)) /
+                        columns;
+                    return Wrap(
+                      spacing: spacing,
+                      runSpacing: spacing,
+                      children: [
+                        for (final item in items)
+                          SizedBox(
+                            width: cardWidth,
+                            child: InventoryStoreCard(
+                              item: item,
+                              userCoins: user.coins,
+                              canRedeem: viewModel.canRedeem(item),
+                              hasRequiredMedal:
+                                  item.requiredMedalNumber == null ||
+                                  viewModel.unlockedMedalNumbers.contains(
+                                    item.requiredMedalNumber,
+                                  ),
+                              onRedeemPressed: () => onSelectRedeemItem(item),
+                            ),
+                          ),
+                      ],
+                    );
+                  },
+                ),
               ],
             ),
           ),
@@ -90,9 +119,13 @@ class InventoryScreen extends StatelessWidget {
 }
 
 class _CoinsBalanceHeaderCard extends StatelessWidget {
-  const _CoinsBalanceHeaderCard({required this.coins});
+  const _CoinsBalanceHeaderCard({
+    required this.coins,
+    required this.unlockedMedalCount,
+  });
 
   final int coins;
+  final int unlockedMedalCount;
 
   @override
   Widget build(BuildContext context) {
@@ -109,8 +142,8 @@ class _CoinsBalanceHeaderCard extends StatelessWidget {
               border: Border.all(color: const Color(0xFFF59E0B)),
             ),
             child: const Icon(
-              Icons.monetization_on_rounded,
-              color: Color(0xFFD97706),
+              Icons.explore_rounded,
+              color: AppColors.brandPrimary,
               size: 32,
             ),
           ),
@@ -131,7 +164,7 @@ class _CoinsBalanceHeaderCard extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'Gana +40 Brújulas por nivel superado y +300 en El gran reto.',
+                  'Tienes $unlockedMedalCount medallas. Desbloquea ropa y accesorios con tus Brújulas.',
                   style: AppTypography.bodySmall.copyWith(
                     color: AppColors.textMuted,
                   ),

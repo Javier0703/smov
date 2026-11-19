@@ -52,10 +52,28 @@ enum AvatarGlasses {
 enum AvatarOutfit {
   tshirt('Camiseta de manga corta'),
   redHoodie('Sudadera roja'),
-  navyPolo('Polo azul');
+  navyPolo('Polo azul'),
+  schoolTracksuit('Chándal del colegio'),
+  explorerJacket('Chaqueta exploradora');
 
   final String label;
   const AvatarOutfit(this.label);
+}
+
+enum AvatarAccessory {
+  none('Sin accesorio'),
+  compassBadge('Insignia de brújula');
+
+  final String label;
+  const AvatarAccessory(this.label);
+}
+
+enum AvatarSpecialStyle {
+  classic('Explorador clásico'),
+  goldenExplorer('Explorador dorado');
+
+  final String label;
+  const AvatarSpecialStyle(this.label);
 }
 
 class AvatarConfig {
@@ -65,6 +83,8 @@ class AvatarConfig {
   final AvatarEyes eyes;
   final AvatarGlasses glasses;
   final AvatarOutfit outfit;
+  final AvatarAccessory accessory;
+  final AvatarSpecialStyle specialStyle;
 
   const AvatarConfig({
     this.presentation = AvatarPresentation.boy,
@@ -73,6 +93,8 @@ class AvatarConfig {
     this.eyes = AvatarEyes.brown,
     this.glasses = AvatarGlasses.none,
     this.outfit = AvatarOutfit.tshirt,
+    this.accessory = AvatarAccessory.none,
+    this.specialStyle = AvatarSpecialStyle.classic,
   });
 
   AvatarConfig copyWith({
@@ -82,6 +104,8 @@ class AvatarConfig {
     AvatarEyes? eyes,
     AvatarGlasses? glasses,
     AvatarOutfit? outfit,
+    AvatarAccessory? accessory,
+    AvatarSpecialStyle? specialStyle,
   }) {
     return AvatarConfig(
       presentation: presentation ?? this.presentation,
@@ -90,6 +114,8 @@ class AvatarConfig {
       eyes: eyes ?? this.eyes,
       glasses: glasses ?? this.glasses,
       outfit: outfit ?? this.outfit,
+      accessory: accessory ?? this.accessory,
+      specialStyle: specialStyle ?? this.specialStyle,
     );
   }
 
@@ -100,6 +126,8 @@ class AvatarConfig {
     'eyes': eyes.name,
     'glasses': glasses.name,
     'outfit': outfit.name,
+    'accessory': accessory.name,
+    'specialStyle': specialStyle.name,
   };
 
   factory AvatarConfig.fromJson(Map<String, dynamic> json) {
@@ -128,6 +156,14 @@ class AvatarConfig {
         (e) => e.name == json['outfit'],
         orElse: () => AvatarOutfit.tshirt,
       ),
+      accessory: AvatarAccessory.values.firstWhere(
+        (e) => e.name == json['accessory'],
+        orElse: () => AvatarAccessory.none,
+      ),
+      specialStyle: AvatarSpecialStyle.values.firstWhere(
+        (e) => e.name == json['specialStyle'],
+        orElse: () => AvatarSpecialStyle.classic,
+      ),
     );
   }
 
@@ -140,12 +176,22 @@ class AvatarConfig {
         other.skinTone == skinTone &&
         other.eyes == eyes &&
         other.glasses == glasses &&
-        other.outfit == outfit;
+        other.outfit == outfit &&
+        other.accessory == accessory &&
+        other.specialStyle == specialStyle;
   }
 
   @override
-  int get hashCode =>
-      Object.hash(presentation, hair, skinTone, eyes, glasses, outfit);
+  int get hashCode => Object.hash(
+    presentation,
+    hair,
+    skinTone,
+    eyes,
+    glasses,
+    outfit,
+    accessory,
+    specialStyle,
+  );
 }
 
 /// Modelo transversal de usuario (Alumno o Docente).

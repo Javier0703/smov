@@ -11,6 +11,7 @@ class InventoryRepository {
   final InventoryService _service;
 
   UserModel getCurrentUser() => _service.getCurrentUser();
+  Set<int> getUnlockedMedalNumbers() => _service.getUnlockedMedalNumbers();
 
   Result<List<InventoryItemModel>> loadInventoryItems() {
     try {
@@ -36,6 +37,23 @@ class InventoryRepository {
       }
 
       final userBefore = _service.getCurrentUser();
+      if (item.isOwned) {
+        return Error<RedeemReceiptModel>(
+          ValidationFailure('Ya tienes ${item.name} en tu mochila.'),
+        );
+      }
+
+      final unlockedMedals = _service.getUnlockedMedalNumbers();
+      final requiredMedalNumber = item.requiredMedalNumber;
+      if (requiredMedalNumber != null &&
+          !unlockedMedals.contains(requiredMedalNumber)) {
+        return Error<RedeemReceiptModel>(
+          ValidationFailure(
+            'Necesitas la medalla número $requiredMedalNumber para canjear ${item.name}.',
+          ),
+        );
+      }
+
       if (userBefore.coins < item.costCoins) {
         final missing = item.costCoins - userBefore.coins;
         return Error<RedeemReceiptModel>(
@@ -52,6 +70,8 @@ class InventoryRepository {
         transactionId: txId,
         itemId: item.id,
         costCoins: item.costCoins,
+        requiredMedalNumber: item.requiredMedalNumber,
+        oneTimePurchase: item.isOneTimePurchase,
       );
       if (!success) {
         return const Error<RedeemReceiptModel>(

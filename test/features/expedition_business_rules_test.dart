@@ -99,6 +99,64 @@ void main() {
       expect(deps.inventoryViewModel.coinsBalance, equals(120));
     });
 
+    test('La tienda desbloquea cosméticos y exige la medalla requerida para el avatar especial', () async {
+      final initialCoins = deps.inventoryViewModel.coinsBalance;
+      deps.avatarViewModel.setSpecialStyle(AvatarSpecialStyle.goldenExplorer);
+      expect(
+        deps.avatarViewModel.draftConfig.specialStyle,
+        AvatarSpecialStyle.classic,
+      );
+
+      final lockedAvatar = await deps.inventoryViewModel.confirmRedeem(
+        'golden_avatar',
+        customTransactionId: 'tx_avatar_locked',
+      );
+      expect(lockedAvatar, isNull);
+      expect(deps.inventoryViewModel.errorMessage, contains('medalla'));
+      expect(deps.inventoryViewModel.coinsBalance, equals(initialCoins));
+
+      final jacket = await deps.inventoryViewModel.confirmRedeem(
+        'explorer_jacket',
+        customTransactionId: 'tx_jacket',
+      );
+      expect(jacket, isNotNull);
+      expect(deps.stateStore.currentUser.coins, equals(initialCoins - 100));
+      deps.avatarViewModel.loadState();
+      expect(deps.avatarViewModel.ownedCosmetics, contains('explorer_jacket'));
+      final badge = await deps.inventoryViewModel.confirmRedeem(
+        'compass_badge',
+        customTransactionId: 'tx_compass_badge',
+      );
+      expect(badge, isNotNull);
+      deps.avatarViewModel.loadState();
+      deps.avatarViewModel.setAccessory(AvatarAccessory.compassBadge);
+      expect(await deps.avatarViewModel.saveChanges(), isTrue);
+
+      await deps.stateStore.recordGameSession(
+        sessionId: 'unlock_medal_8',
+        gameId: 'gran_reto',
+        gameTitle: 'El gran reto del explorador',
+        level: 1,
+        correctAnswers: 7,
+        totalAttempts: 7,
+        durationSeconds: 60,
+        rewardCoins: 300,
+        unlockedMedalNumber: 8,
+      );
+      final goldenAvatar = await deps.inventoryViewModel.confirmRedeem(
+        'golden_avatar',
+        customTransactionId: 'tx_avatar_unlocked',
+      );
+      expect(goldenAvatar, isNotNull);
+      deps.avatarViewModel.loadState();
+      deps.avatarViewModel.setSpecialStyle(AvatarSpecialStyle.goldenExplorer);
+      expect(await deps.avatarViewModel.saveChanges(), isTrue);
+      expect(
+        deps.stateStore.currentUser.avatarConfig.specialStyle,
+        AvatarSpecialStyle.goldenExplorer,
+      );
+    });
+
     test('4. Precisión ponderada: Mi actividad y Espacio docente calculan sum(correctAnswers) / sum(totalAttempts)', () {
       final activity = deps.statisticsViewModel.activity!;
       // Semilla de Alex: (9+8+15+7) = 39 aciertos sobre (10+10+17+9) = 46 intentos -> 85%
@@ -111,6 +169,7 @@ void main() {
       expect(deps.avatarViewModel.hasUnsavedChanges, isFalse);
       deps.avatarViewModel.setGlasses(AvatarGlasses.round);
       deps.avatarViewModel.setOutfit(AvatarOutfit.redHoodie);
+      deps.avatarViewModel.setExplorerName('  Luna  ');
       expect(deps.avatarViewModel.hasUnsavedChanges, isTrue);
 
       final saved = await deps.avatarViewModel.saveChanges();
@@ -120,6 +179,7 @@ void main() {
         deps.stateStore.currentUser.avatarConfig.glasses,
         equals(AvatarGlasses.round),
       );
+      expect(deps.stateStore.currentUser.displayName, equals('Luna'));
 
       // Validación en el Editor de preguntas
       deps.teacherViewModel.updateDraftPrompt('Corto');

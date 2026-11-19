@@ -14,16 +14,19 @@ class InventoryStoreCard extends StatelessWidget {
     super.key,
     required this.item,
     required this.userCoins,
+    required this.canRedeem,
+    required this.hasRequiredMedal,
     required this.onRedeemPressed,
   });
 
   final InventoryItemModel item;
   final int userCoins;
+  final bool canRedeem;
+  final bool hasRequiredMedal;
   final VoidCallback onRedeemPressed;
 
   @override
   Widget build(BuildContext context) {
-    final canAfford = item.canAfford(userCoins);
     final missing = item.missingCoins(userCoins);
 
     return AppBaseCard(
@@ -65,27 +68,49 @@ class InventoryStoreCard extends StatelessWidget {
                 ),
               ),
               StatusBadge(
-                label: 'En mochila: ${item.ownedCount}',
-                variant: item.ownedCount > 0
+                label: item.isOwned
+                    ? 'Desbloqueado'
+                    : item.category == InventoryItemCategory.aid
+                    ? 'En mochila: ${item.ownedCount}'
+                    : item.categoryLabel.toUpperCase(),
+                variant: item.isOwned
                     ? StatusBadgeVariant.success
                     : StatusBadgeVariant.neutral,
               ),
             ],
           ),
           const SizedBox(height: AppSpacing.sm),
+          if (item.requiredMedalNumber != null) ...[
+            StatusBadge(
+              label: hasRequiredMedal
+                  ? 'Medalla ${item.requiredMedalNumber} conseguida'
+                  : 'Requiere medalla ${item.requiredMedalNumber}',
+              variant: hasRequiredMedal
+                  ? StatusBadgeVariant.success
+                  : StatusBadgeVariant.warning,
+              icon: Icons.emoji_events_rounded,
+            ),
+            const SizedBox(height: AppSpacing.xs),
+          ],
           Text(
             item.description,
             style: AppTypography.bodySmall.copyWith(color: AppColors.textMuted),
           ),
           const SizedBox(height: AppSpacing.md),
           AppPrimaryButton(
-            label: canAfford
-                ? 'Canjear por ${item.costCoins} Brújulas'
+            label: item.isOwned
+                ? 'Ya lo tienes'
+                : !hasRequiredMedal
+                ? 'Consigue la medalla ${item.requiredMedalNumber}'
+                : item.canAfford(userCoins)
+                ? 'Comprar por ${item.costCoins} Brújulas'
                 : 'Te faltan $missing Brújulas',
-            icon: canAfford
+            icon: item.isOwned
+                ? Icons.check_circle_outline_rounded
+                : canRedeem
                 ? Icons.shopping_bag_outlined
                 : Icons.lock_clock_rounded,
-            onPressed: canAfford ? onRedeemPressed : null,
+            onPressed: canRedeem ? onRedeemPressed : null,
           ),
         ],
       ),
