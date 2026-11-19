@@ -271,6 +271,8 @@ class _GridChallengeWrapperBoard extends StatelessWidget {
           showCompassBoost: viewModel.isCompassBoostActive,
           allowTargetReveal: viewModel.activeGame?.id != 'rumbo_desconocido',
           allowCellTap: viewModel.activeGame?.id != 'rumbo_desconocido',
+          showExplorer:
+              round.mechanic != ChallengeMechanicType.cartographyBuilder,
           onCellTap: (coord) async {
             final finished = await viewModel.handleGridCellTap(coord);
             onFinishedCheck(finished);
@@ -320,6 +322,8 @@ class _CartographySymbolBar extends StatelessWidget {
     ('Hospital', Icons.local_hospital_rounded),
     ('Casa', Icons.home_rounded),
     ('Cordillera', Icons.terrain_rounded),
+    ('Río', Icons.water_rounded),
+    ('Lago', Icons.waves_rounded),
     ('Puerto', Icons.directions_boat_rounded),
     ('Bosque', Icons.park_rounded),
     ('Refugio', Icons.cabin_rounded),

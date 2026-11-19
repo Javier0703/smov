@@ -283,6 +283,10 @@ void main() {
         deps.gameplayViewModel.rounds.first.instruction,
         contains('al sur del parque'),
       );
+      expect(
+        deps.gameplayViewModel.rounds.first.instruction,
+        isNot(contains('bosque')),
+      );
       deps.gameplayViewModel.startNewSession(game: findPlace, levelNumber: 3);
       expect(
         deps.gameplayViewModel.rounds.first.title,
@@ -342,17 +346,219 @@ void main() {
         isFalse,
       );
       await deps.gameplayViewModel.placeCartographySymbol(
-        'Parque',
+        'Cordillera',
         const GridCoord(0, 2),
       );
       expect(
         deps.gameplayViewModel.placedCartographySymbols[const GridCoord(0, 2)],
-        'Parque',
+        'Cordillera',
       );
       expect(
         deps.gameplayViewModel.currentRound?.mechanic,
         ChallengeMechanicType.cartographyBuilder,
       );
+    });
+
+    test(
+      'Construye el mapa conserva referencias y exige completar la leyenda',
+      () async {
+        final game = deps.adventuresViewModel.findGame('construye_mapa')!;
+        final vm = deps.gameplayViewModel;
+
+        vm.startNewSession(game: game, levelNumber: 1);
+        var round = vm.currentRound!;
+        expect(vm.placedCartographySymbols[const GridCoord(2, 2)], 'Colegio');
+        expect(round.requiredMapSymbols, hasLength(4));
+        expect(
+          await vm.placeCartographySymbol('Cordillera', const GridCoord(0, 1)),
+          isFalse,
+        );
+        expect(
+          vm.placedCartographySymbols.values,
+          isNot(contains('Cordillera')),
+        );
+
+        for (var index = 0; index < round.requiredMapSymbols.length; index++) {
+          final placement = round.requiredMapSymbols[index];
+          final finished = await vm.placeCartographySymbol(
+            placement.symbol,
+            placement.coord,
+          );
+          expect(finished, index == round.requiredMapSymbols.length - 1);
+        }
+        expect(
+          vm.placedCartographySymbols.values,
+          containsAll(<String>[
+            'Colegio',
+            'Cordillera',
+            'Puerto',
+            'Bosque',
+            'Lago',
+          ]),
+        );
+
+        vm.startNewSession(game: game, levelNumber: 2);
+        round = vm.currentRound!;
+        expect(
+          vm.placedCartographySymbols.values,
+          containsAll(<String>['Parque', 'Colegio', 'Río']),
+        );
+        expect(round.requiredMapSymbols, hasLength(3));
+        expect(round.instruction, contains('puente al Sur del río'));
+
+        vm.startNewSession(game: game, levelNumber: 3);
+        round = vm.currentRound!;
+        expect(vm.rounds, hasLength(1));
+        expect(round.requiredMapSymbols, hasLength(4));
+        expect(round.fixedMapSymbols.single.symbol, 'Río');
+      },
+    );
+
+    test('Rumbo restringe diagonales al nivel avanzado', () async {
+      final game = deps.adventuresViewModel.findGame('rumbo_desconocido')!;
+      final vm = deps.gameplayViewModel;
+
+      vm.startNewSession(game: game, levelNumber: 1);
+      expect(await vm.moveByDirection(CardinalDirection.ne), isFalse);
+      expect(vm.explorerCoord, const GridCoord(4, 1));
+
+      vm.startNewSession(game: game, levelNumber: 3);
+      expect(
+        vm.currentRound!.allowedDirections,
+        contains(CardinalDirection.no),
+      );
+    });
+
+    testWidgets('Llegar a tiempo bloquea el recorrido cuando vence el reloj', (
+      tester,
+    ) async {
+      final game = deps.adventuresViewModel.findGame('llegar_a_tiempo')!;
+      final vm = deps.gameplayViewModel;
+      vm.startNewSession(game: game, levelNumber: 1);
+
+      await tester.pump(const Duration(minutes: 2));
+      expect(vm.remainingSeconds, 0);
+      expect(await vm.handleGridCellTap(const GridCoord(4, 1)), isFalse);
+      expect(vm.explorerCoord, const GridCoord(4, 0));
+      expect(vm.feedbackMessage, contains('Se acabó el tiempo'));
+    });
+
+    test(
+      'Las rondas de los diez juegos mantienen sus casillas dentro del tablero',
+      () {
+        const gridMechanics = <ChallengeMechanicType>{
+          ChallengeMechanicType.gridNavigation,
+          ChallengeMechanicType.gridCoordinateFind,
+          ChallengeMechanicType.gridTimedPath,
+          ChallengeMechanicType.gridTreasureClues,
+          ChallengeMechanicType.cartographyBuilder,
+        };
+        final games = deps.adventuresViewModel.games;
+
+        for (final game in games) {
+          for (var level = 1; level <= 3; level++) {
+            deps.gameplayViewModel.startNewSession(
+              game: game,
+              levelNumber: level,
+            );
+            expect(
+              deps.gameplayViewModel.rounds,
+              isNotEmpty,
+              reason: '${game.id}, nivel $level',
+            );
+
+            for (final round in deps.gameplayViewModel.rounds) {
+              if (!gridMechanics.contains(round.mechanic)) continue;
+              final mapCoords = <GridCoord>[
+                round.startCoord,
+                round.targetCoord,
+                ...round.obstacles,
+                ...round.landmarks.map((placement) => placement.coord),
+                ...round.fixedMapSymbols.map((placement) => placement.coord),
+                ...round.requiredMapSymbols.map((placement) => placement.coord),
+              ];
+              for (final coord in mapCoords) {
+                expect(
+                  coord.row >= 0 &&
+                      coord.row < 5 &&
+                      coord.col >= 0 &&
+                      coord.col < 5,
+                  isTrue,
+                  reason: '${game.id}, nivel $level, ${round.title}: $coord',
+                );
+              }
+              if (round.mechanic != ChallengeMechanicType.cartographyBuilder) {
+                expect(
+                  round.obstacles,
+                  isNot(contains(round.startCoord)),
+                  reason: '${game.id}, nivel $level, ${round.title}',
+                );
+                expect(
+                  round.obstacles,
+                  isNot(contains(round.targetCoord)),
+                  reason: '${game.id}, nivel $level, ${round.title}',
+                );
+              }
+            }
+          }
+        }
+      },
+    );
+
+    testWidgets('Construye el mapa acepta arrastrar un símbolo al tablero', (
+      tester,
+    ) async {
+      final game = deps.adventuresViewModel.findGame('construye_mapa')!;
+      deps.gameplayViewModel.startNewSession(game: game, levelNumber: 3);
+      final round = deps.gameplayViewModel.currentRound!;
+      GridSymbolPlacement? accepted;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 400,
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: GridExpeditionBoard(
+                        round: round,
+                        explorerCoord: round.startCoord,
+                        visitedCoords: const <GridCoord>[],
+                        avatarConfig: deps.stateStore.currentUser.avatarConfig,
+                        showHintTarget: false,
+                        showCompassBoost: false,
+                        showExplorer: false,
+                        onCellTap: (_) {},
+                        onDirectionMove: (_) {},
+                        onSymbolPlaced: (symbol, coord) {
+                          accepted = GridSymbolPlacement(symbol, coord);
+                        },
+                      ),
+                    ),
+                    Draggable<String>(
+                      data: 'Cordillera',
+                      feedback: const Material(
+                        child: Text('símbolo en movimiento'),
+                      ),
+                      child: const Text('arrastrar cordillera'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final target = tester.getRect(find.text('A3'));
+      final source = tester.getCenter(find.text('arrastrar cordillera'));
+      await tester.dragFrom(source, target.center - source);
+      await tester.pumpAndSettle();
+
+      expect(accepted?.symbol, 'Cordillera');
+      expect(accepted?.coord, const GridCoord(0, 2));
     });
 
     test('1. Política docente de niveles: bloquear o habilitar Nivel 3 en 4.º A actualiza inmediatamente el acceso del alumno', () async {
@@ -437,6 +643,14 @@ void main() {
       expect(
         deps.gameplayViewModel.rounds.first.targetRegionId,
         'castilla_y_leon',
+      );
+      expect(
+        deps.gameplayViewModel.rounds.first.instruction,
+        contains('nueve provincias'),
+      );
+      expect(
+        deps.gameplayViewModel.rounds.first.instruction,
+        isNot(contains('Castilla y León')),
       );
       expect(
         deps.gameplayViewModel.rounds.where(

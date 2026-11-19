@@ -10,6 +10,14 @@ class GameplayService {
 
   final ExpeditionStateStore _store;
 
+  static const List<CardinalDirection> _cardinalDirections =
+      <CardinalDirection>[
+        CardinalDirection.n,
+        CardinalDirection.s,
+        CardinalDirection.e,
+        CardinalDirection.o,
+      ];
+
   UserModel getCurrentUser() => _store.currentUser;
   Map<String, int> getInventoryCounts() => _store.inventoryCounts;
 
@@ -86,6 +94,7 @@ class GameplayService {
           hint: 'El Norte está arriba. Avanza hacia arriba tres veces.',
           startCoord: GridCoord(4, 1),
           targetCoord: GridCoord(1, 1),
+          allowedDirections: _cardinalDirections,
         ),
         GameRoundChallenge(
           roundNumber: 2,
@@ -96,6 +105,7 @@ class GameplayService {
           hint: 'El Este está a la derecha. Avanza hacia la derecha dos veces.',
           startCoord: GridCoord(1, 1),
           targetCoord: GridCoord(1, 3),
+          allowedDirections: _cardinalDirections,
         ),
       ];
     }
@@ -110,6 +120,7 @@ class GameplayService {
           hint: 'Combina dos rumbos: primero Norte y después Este.',
           startCoord: GridCoord(4, 0),
           targetCoord: GridCoord(1, 2),
+          allowedDirections: _cardinalDirections,
         ),
         GameRoundChallenge(
           roundNumber: 2,
@@ -119,6 +130,7 @@ class GameplayService {
           hint: 'Combina Norte y Oeste siguiendo las instrucciones.',
           startCoord: GridCoord(4, 4),
           targetCoord: GridCoord(1, 1),
+          allowedDirections: _cardinalDirections,
         ),
       ];
     }
@@ -252,7 +264,7 @@ class GameplayService {
           roundNumber: 1,
           mechanic: ChallengeMechanicType.gridCoordinateFind,
           title: 'Posición relativa · Al sur del parque',
-          instruction: '¿Qué hay al sur del parque? Toca el bosque en E4.',
+          instruction: '¿Qué hay al sur del parque? Toca el lugar correcto.',
           hint: 'Mira hacia abajo desde el parque: la primera casilla al Sur es el bosque.',
           startCoord: GridCoord(4, 0),
           targetCoord: GridCoord(4, 3),
@@ -267,7 +279,7 @@ class GameplayService {
           mechanic: ChallengeMechanicType.gridCoordinateFind,
           title: 'Posición relativa · Al oeste del colegio',
           instruction:
-              '¿Qué lugar está al oeste del colegio? Toca el hospital.',
+              '¿Qué lugar está al oeste del colegio? Toca el lugar correcto.',
           hint: 'El oeste está a la izquierda: busca la casilla anterior al colegio.',
           startCoord: GridCoord(3, 3),
           targetCoord: GridCoord(2, 0),
@@ -450,24 +462,19 @@ class GameplayService {
         GameRoundChallenge(
           roundNumber: 1,
           mechanic: ChallengeMechanicType.cartographyBuilder,
-          title: 'Plano 1 · Parque al Norte',
-          instruction:
-              'Arrastra el parque al norte del colegio, en la casilla A3.',
-          hint: 'El Norte está en la primera fila, encima del colegio.',
+          title: 'Plano básico · Los cuatro rumbos',
+          instruction: 'Completa el plano colocando cada elemento al Norte, Sur, Este u Oeste del colegio.',
+          hint: 'El Norte está arriba, el Sur abajo, el Este a la derecha y el Oeste a la izquierda.',
           startCoord: GridCoord(2, 2),
-          targetCoord: GridCoord(0, 2),
-          symbolLabel: 'Parque',
-        ),
-        GameRoundChallenge(
-          roundNumber: 2,
-          mechanic: ChallengeMechanicType.cartographyBuilder,
-          title: 'Plano 2 · Hospital al Este',
-          instruction:
-              'Arrastra el hospital al este del parque, en la casilla A5.',
-          hint: 'El Este está a la derecha del parque.',
-          startCoord: GridCoord(0, 2),
-          targetCoord: GridCoord(0, 4),
-          symbolLabel: 'Hospital',
+          fixedMapSymbols: <GridSymbolPlacement>[
+            GridSymbolPlacement('Colegio', GridCoord(2, 2)),
+          ],
+          requiredMapSymbols: <GridSymbolPlacement>[
+            GridSymbolPlacement('Cordillera', GridCoord(0, 2)),
+            GridSymbolPlacement('Puerto', GridCoord(4, 2)),
+            GridSymbolPlacement('Bosque', GridCoord(2, 0)),
+            GridSymbolPlacement('Lago', GridCoord(2, 4)),
+          ],
         ),
       ];
     }
@@ -477,23 +484,20 @@ class GameplayService {
         GameRoundChallenge(
           roundNumber: 1,
           mechanic: ChallengeMechanicType.cartographyBuilder,
-          title: 'Plano comarcal · Hospital al Este',
-          instruction:
-              'Arrastra el hospital al este del parque. Colócalo en D4.',
-          hint: 'El Este está a la derecha del parque.',
+          title: 'Plano comarcal · Localidades y río',
+          instruction: 'Completa el mapa: hospital al Este del parque, casa al Oeste del colegio y puente al Sur del río.',
+          hint: 'Usa las referencias del mapa. El río ocupa una fila al Norte del puente.',
           startCoord: GridCoord(2, 2),
-          targetCoord: GridCoord(3, 3),
-          symbolLabel: 'Hospital',
-        ),
-        GameRoundChallenge(
-          roundNumber: 2,
-          mechanic: ChallengeMechanicType.cartographyBuilder,
-          title: 'Plano comarcal · Casa al Oeste',
-          instruction: 'Arrastra una casa al oeste del colegio.',
-          hint: 'El Oeste está a la izquierda.',
-          startCoord: GridCoord(3, 3),
-          targetCoord: GridCoord(2, 0),
-          symbolLabel: 'Casa',
+          fixedMapSymbols: <GridSymbolPlacement>[
+            GridSymbolPlacement('Parque', GridCoord(3, 2)),
+            GridSymbolPlacement('Colegio', GridCoord(2, 2)),
+            GridSymbolPlacement('Río', GridCoord(1, 3)),
+          ],
+          requiredMapSymbols: <GridSymbolPlacement>[
+            GridSymbolPlacement('Hospital', GridCoord(3, 3)),
+            GridSymbolPlacement('Casa', GridCoord(2, 0)),
+            GridSymbolPlacement('Puente', GridCoord(2, 3)),
+          ],
         ),
       ];
     }
@@ -502,32 +506,18 @@ class GameplayService {
       GameRoundChallenge(
         roundNumber: 1,
         mechanic: ChallengeMechanicType.cartographyBuilder,
-        title: 'Plano 1 · La Cordillera del Norte',
-        instruction: 'Selecciona el símbolo "Cordillera" y colócalo en la frontera Norte central del mapa (casilla A3).',
-        hint: 'El Norte está en la primera fila (Fila A). Toca la columna central (3).',
-        startCoord: GridCoord(2, 2),
-        targetCoord: GridCoord(0, 2),
-        symbolLabel: 'Cordillera',
-      ),
-      GameRoundChallenge(
-        roundNumber: 2,
-        mechanic: ChallengeMechanicType.cartographyBuilder,
-        title: 'Plano 2 · El Puerto Marítimo del Sur',
-        instruction: 'Ahora coloca el símbolo "Puerto" en la costa Sur del mapa (casilla E3).',
-        hint: 'El Sur corresponde a la fila inferior (Fila E), columna 3.',
-        startCoord: GridCoord(0, 2),
-        targetCoord: GridCoord(4, 2),
-        symbolLabel: 'Puerto',
-      ),
-      GameRoundChallenge(
-        roundNumber: 3,
-        mechanic: ChallengeMechanicType.cartographyBuilder,
-        title: 'Plano 3 · El Bosque del Oeste',
-        instruction: 'Completa la cartografía ubicando el símbolo "Bosque" en el límite Oeste (casilla C1).',
-        hint: 'El Oeste está a la izquierda (Columna 1). Busca la fila C.',
-        startCoord: GridCoord(4, 2),
-        targetCoord: GridCoord(2, 0),
-        symbolLabel: 'Bosque',
+        title: 'Plano histórico · Construcción con leyenda',
+        instruction: 'Usa la leyenda para completar el mapa: cordillera al Norte del río, puerto al Sur, bosque al Oeste y lago al Este.',
+        hint: 'El río está en el centro. Interpreta el Norte, Sur, Este y Oeste para colocar cada símbolo.',
+        fixedMapSymbols: <GridSymbolPlacement>[
+          GridSymbolPlacement('Río', GridCoord(2, 2)),
+        ],
+        requiredMapSymbols: <GridSymbolPlacement>[
+          GridSymbolPlacement('Cordillera', GridCoord(0, 2)),
+          GridSymbolPlacement('Puerto', GridCoord(4, 2)),
+          GridSymbolPlacement('Bosque', GridCoord(2, 0)),
+          GridSymbolPlacement('Lago', GridCoord(2, 4)),
+        ],
       ),
     ];
   }
@@ -631,8 +621,8 @@ class GameplayService {
           mechanic: ChallengeMechanicType.spainTerritoryMap,
           mapMode: SpainMapMode.autonomousCommunities,
           title: 'Pista de límites · Comunidad con Portugal',
-          instruction: 'Arrastra al mapa la comunidad autónoma que limita con Portugal al oeste.',
-          hint: 'Es Castilla y León, que comparte frontera con Portugal y contiene nueve provincias.',
+          instruction: 'Arrastra la comunidad que limita con Portugal y tiene nueve provincias.',
+          hint: 'Comprueba cuántas provincias la forman y busca su frontera occidental con Portugal.',
           targetRegionId: 'castilla_y_leon',
         ),
         ...provinceRounds,

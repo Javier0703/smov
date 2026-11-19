@@ -66,6 +66,14 @@ class GridPathStep {
   final int distance;
 }
 
+/// Símbolo cartográfico fijo o que debe colocarse en una casilla.
+class GridSymbolPlacement {
+  const GridSymbolPlacement(this.symbol, this.coord);
+
+  final String symbol;
+  final GridCoord coord;
+}
+
 /// Definición de un reto o etapa dentro de una sesión de juego.
 class GameRoundChallenge {
   const GameRoundChallenge({
@@ -77,6 +85,16 @@ class GameRoundChallenge {
     this.startCoord = const GridCoord(4, 1),
     GridCoord? targetCoord,
     this.pathSteps = const <GridPathStep>[],
+    this.allowedDirections = const <CardinalDirection>[
+      CardinalDirection.n,
+      CardinalDirection.ne,
+      CardinalDirection.e,
+      CardinalDirection.se,
+      CardinalDirection.s,
+      CardinalDirection.so,
+      CardinalDirection.o,
+      CardinalDirection.no,
+    ],
     this.obstacles = const <GridCoord>[],
     this.startDirection = CardinalDirection.n,
     this.targetDirection = CardinalDirection.ne,
@@ -88,6 +106,8 @@ class GameRoundChallenge {
     this.clues = const <String>[],
     this.symbolLabel = 'Cumbre',
     this.landmarks = const <GridLandmarkPlacement>[],
+    this.fixedMapSymbols = const <GridSymbolPlacement>[],
+    this.requiredMapSymbols = const <GridSymbolPlacement>[],
     this.obstacleType = GridObstacleType.rock,
   }) : _targetCoord = targetCoord ?? const GridCoord(1, 4);
 
@@ -99,6 +119,7 @@ class GameRoundChallenge {
   final GridCoord startCoord;
   final GridCoord _targetCoord;
   final List<GridPathStep> pathSteps;
+  final List<CardinalDirection> allowedDirections;
   final List<GridCoord> obstacles;
   final CardinalDirection startDirection;
   final CardinalDirection targetDirection;
@@ -110,6 +131,8 @@ class GameRoundChallenge {
   final List<String> clues;
   final String symbolLabel;
   final List<GridLandmarkPlacement> landmarks;
+  final List<GridSymbolPlacement> fixedMapSymbols;
+  final List<GridSymbolPlacement> requiredMapSymbols;
   final GridObstacleType obstacleType;
 
   GridCoord get targetCoord {

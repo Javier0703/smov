@@ -87,8 +87,14 @@ class GameplayViewModel extends ChangeNotifier {
   String? get funnyDetourMessage => _funnyDetourMessage;
   GameSessionResultModel? get lastResult => _lastResult;
   int get remainingSeconds => _remainingSeconds;
-  Map<GridCoord, String> get placedCartographySymbols =>
-      Map<GridCoord, String>.unmodifiable(_placedCartographySymbols);
+  Map<GridCoord, String> get placedCartographySymbols {
+    final symbols = Map<GridCoord, String>.of(_placedCartographySymbols);
+    for (final placement
+        in currentRound?.fixedMapSymbols ?? const <GridSymbolPlacement>[]) {
+      symbols.putIfAbsent(placement.coord, () => placement.symbol);
+    }
+    return Map<GridCoord, String>.unmodifiable(symbols);
+  }
 
   UserModel get currentUser => _repository.getCurrentUser();
   Map<String, int> get inventoryCounts => _repository.getInventoryCounts();
@@ -128,8 +134,10 @@ class GameplayViewModel extends ChangeNotifier {
     _sessionTimer?.cancel();
     if (game.id == 'llegar_a_tiempo') {
       _sessionTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-        if (_remainingSeconds <= 0) {
+        if (_remainingSeconds <= 1) {
+          _remainingSeconds = 0;
           _sessionTimer?.cancel();
+          _sessionTimer = null;
           _feedbackMessage =
               'Se acabó el tiempo. Busca otra ruta y vuelve a intentarlo.';
           _isFeedbackPositive = false;
@@ -153,11 +161,21 @@ class GameplayViewModel extends ChangeNotifier {
     final round = currentRound;
     if (round == null) return;
 
+    for (final placement in round.fixedMapSymbols) {
+      _placedCartographySymbols.putIfAbsent(
+        placement.coord,
+        () => placement.symbol,
+      );
+    }
+
     _explorerCoord = round.startCoord;
     _visitedCoords
       ..clear()
       ..add(round.startCoord);
     _selectedCartographySymbol = round.symbolLabel;
+    if (round.requiredMapSymbols.isNotEmpty) {
+      _selectedCartographySymbol = round.requiredMapSymbols.first.symbol;
+    }
     _compassDirection = round.startDirection;
     _selectedRegionId = null;
     _routeRegionIds.clear();
@@ -185,6 +203,16 @@ class GameplayViewModel extends ChangeNotifier {
 
   /// Movimiento por dirección cardinal sobre el tablero de casillas.
   Future<bool> moveByDirection(CardinalDirection direction) async {
+    final round = currentRound;
+    if (round == null) return false;
+    if (!round.allowedDirections.contains(direction)) {
+      _feedbackMessage =
+          'En este nivel utiliza solo los rumbos cardinales indicados.';
+      _isFeedbackPositive = false;
+      notifyListeners();
+      return false;
+    }
+
     final (dRow, dCol) = switch (direction) {
       CardinalDirection.n => (-1, 0),
       CardinalDirection.ne => (-1, 1),
@@ -209,6 +237,14 @@ class GameplayViewModel extends ChangeNotifier {
   }) async {
     final round = currentRound;
     if (round == null) return false;
+    if (_activeGame?.id == 'llegar_a_tiempo' &&
+        round.mechanic == ChallengeMechanicType.gridTimedPath &&
+        _remainingSeconds <= 0) {
+      _feedbackMessage = 'Se acabó el tiempo. Sal de la misión y vuelve a empezar para intentarlo de nuevo.';
+      _isFeedbackPositive = false;
+      notifyListeners();
+      return false;
+    }
     if (_activeGame?.id == 'rumbo_desconocido' &&
         round.mechanic == ChallengeMechanicType.gridNavigation &&
         !fromCardinalButton) {
@@ -237,6 +273,19 @@ class GameplayViewModel extends ChangeNotifier {
           (rowDistance == 0 && columnDistance == 0)) {
         _totalAttempts++;
         _feedbackMessage = 'Avanza una casilla cada vez; no puedes saltar directamente al destino.';
+        _isFeedbackPositive = false;
+        notifyListeners();
+        return false;
+      }
+      if (round.mechanic == ChallengeMechanicType.gridNavigation &&
+          rowDistance == 1 &&
+          columnDistance == 1 &&
+          !round.allowedDirections.any(
+            (direction) => direction.degrees % 90 != 0,
+          )) {
+        _totalAttempts++;
+        _feedbackMessage =
+            'En este nivel avanza solo al Norte, Sur, Este u Oeste.';
         _isFeedbackPositive = false;
         notifyListeners();
         return false;
@@ -342,13 +391,41 @@ class GameplayViewModel extends ChangeNotifier {
     }
 
     _totalAttempts++;
-    if (symbol == round.symbolLabel && coord == round.targetCoord) {
+    final requiredPlacements = round.requiredMapSymbols;
+    final expectedPlacement = requiredPlacements.isEmpty
+        ? symbol == round.symbolLabel &&
+              coord == round.targetCoord &&
+              !_placedCartographySymbols.containsKey(coord)
+              ? GridSymbolPlacement(round.symbolLabel, round.targetCoord)
+              : null
+        : requiredPlacements
+              .where(
+                (placement) =>
+                    placement.symbol == symbol &&
+                    placement.coord == coord &&
+                    !_placedCartographySymbols.containsKey(placement.coord),
+              )
+              .firstOrNull;
+    if (expectedPlacement != null) {
       _placedCartographySymbols[coord] = symbol;
       _correctAnswers++;
+
+      final allPlacementsComplete = requiredPlacements.every(
+        (placement) =>
+            _placedCartographySymbols[placement.coord] == placement.symbol,
+      );
+      if (allPlacementsComplete) {
+        _feedbackMessage =
+            '¡Plano construido! Has colocado todos los símbolos correctamente.';
+        _isFeedbackPositive = true;
+        return _advanceOrFinish();
+      }
+
       _feedbackMessage =
-          '¡Plano construido! $symbol colocado en la casilla correcta.';
+          '¡Bien! $symbol está en su sitio. Continúa completando el plano.';
       _isFeedbackPositive = true;
-      return _advanceOrFinish();
+      notifyListeners();
+      return false;
     }
 
     _feedbackMessage = 'Ese símbolo no corresponde a la pista de esta casilla. Revisa el Norte, Sur, Este u Oeste.';
@@ -483,6 +560,15 @@ class GameplayViewModel extends ChangeNotifier {
 
   /// Consume una ayuda de la mochila durante la partida (`Tu mochila en esta prueba`).
   bool useBackpackHelper(String itemId) {
+    if (itemId == 'hourglass' &&
+        _activeGame?.id == 'llegar_a_tiempo' &&
+        _remainingSeconds <= 0) {
+      _feedbackMessage = 'El tiempo ya terminó. Vuelve a empezar la misión antes de usar el reloj.';
+      _isFeedbackPositive = false;
+      notifyListeners();
+      return false;
+    }
+
     final result = _repository.useBackpackItem(itemId);
     switch (result) {
       case Success<bool>():

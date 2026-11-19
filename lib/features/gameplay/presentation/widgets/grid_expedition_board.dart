@@ -20,6 +20,7 @@ class GridExpeditionBoard extends StatelessWidget {
     required this.showCompassBoost,
     this.allowTargetReveal = true,
     this.allowCellTap = true,
+    this.showExplorer = true,
     required this.onCellTap,
     required this.onDirectionMove,
     this.placedSymbols = const <GridCoord, String>{},
@@ -34,6 +35,7 @@ class GridExpeditionBoard extends StatelessWidget {
   final bool showCompassBoost;
   final bool allowTargetReveal;
   final bool allowCellTap;
+  final bool showExplorer;
   final ValueChanged<GridCoord> onCellTap;
   final ValueChanged<CardinalDirection> onDirectionMove;
   final Map<GridCoord, String> placedSymbols;
@@ -47,7 +49,8 @@ class GridExpeditionBoard extends StatelessWidget {
         allowTargetReveal &&
         (round.mechanic == ChallengeMechanicType.gridNavigation ||
             round.mechanic == ChallengeMechanicType.gridTimedPath ||
-            showHintTarget);
+            (showHintTarget &&
+                round.mechanic != ChallengeMechanicType.cartographyBuilder));
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -105,8 +108,10 @@ class GridExpeditionBoard extends StatelessWidget {
                       child: _GridCellItem(
                         coord: GridCoord(row, col),
                         isExplorerHere:
+                            showExplorer &&
                             explorerCoord.row == row &&
                             explorerCoord.col == col,
+                        showExplorer: showExplorer,
                         isTargetHere:
                             round.targetCoord.row == row &&
                             round.targetCoord.col == col,
@@ -115,12 +120,23 @@ class GridExpeditionBoard extends StatelessWidget {
                           GridCoord(row, col),
                         ),
                         obstacleType: round.obstacleType,
-                        isVisited: visitedCoords.contains(GridCoord(row, col)),
+                        isVisited:
+                            showExplorer &&
+                            visitedCoords.contains(GridCoord(row, col)),
                         isHintHighlighted:
                             allowTargetReveal &&
                             showHintTarget &&
-                            round.targetCoord.row == row &&
-                            round.targetCoord.col == col,
+                            (round.mechanic ==
+                                    ChallengeMechanicType.cartographyBuilder
+                                ? round.requiredMapSymbols.any(
+                                    (placement) =>
+                                        placement.coord.row == row &&
+                                        placement.coord.col == col &&
+                                        placedSymbols[placement.coord] !=
+                                            placement.symbol,
+                                  )
+                                : round.targetCoord.row == row &&
+                                      round.targetCoord.col == col),
                         landmark: round.landmarkAt(GridCoord(row, col)),
                         avatarConfig: avatarConfig,
                         mechanic: round.mechanic,
@@ -149,7 +165,10 @@ class GridExpeditionBoard extends StatelessWidget {
             round.mechanic == ChallengeMechanicType.gridTimedPath ||
             showCompassBoost) ...[
           const SizedBox(height: AppSpacing.xs),
-          _DirectionalPadBar(onDirectionMove: onDirectionMove),
+          _DirectionalPadBar(
+            onDirectionMove: onDirectionMove,
+            directions: round.allowedDirections,
+          ),
         ],
       ],
     );
@@ -160,6 +179,7 @@ class _GridCellItem extends StatelessWidget {
   const _GridCellItem({
     required this.coord,
     required this.isExplorerHere,
+    required this.showExplorer,
     required this.isTargetHere,
     required this.showTargetFlag,
     required this.isObstacle,
@@ -176,6 +196,7 @@ class _GridCellItem extends StatelessWidget {
 
   final GridCoord coord;
   final bool isExplorerHere;
+  final bool showExplorer;
   final bool isTargetHere;
   final bool showTargetFlag;
   final bool isObstacle;
@@ -261,7 +282,7 @@ class _GridCellItem extends StatelessWidget {
                     )
                   else if (landmark != null)
                     _GridLandmarkIcon(landmark: landmark!)
-                  else if (isExplorerHere)
+                  else if (showExplorer && isExplorerHere)
                     ExplorerAvatarWidget(
                       config: avatarConfig,
                       size: 38,
@@ -358,9 +379,13 @@ class _LandmarkLegend extends StatelessWidget {
 }
 
 class _DirectionalPadBar extends StatelessWidget {
-  const _DirectionalPadBar({required this.onDirectionMove});
+  const _DirectionalPadBar({
+    required this.onDirectionMove,
+    required this.directions,
+  });
 
   final ValueChanged<CardinalDirection> onDirectionMove;
+  final List<CardinalDirection> directions;
 
   @override
   Widget build(BuildContext context) {
@@ -369,16 +394,7 @@ class _DirectionalPadBar extends StatelessWidget {
       runSpacing: 6,
       alignment: WrapAlignment.center,
       children: [
-        for (final dir in const <CardinalDirection>[
-          CardinalDirection.no,
-          CardinalDirection.n,
-          CardinalDirection.ne,
-          CardinalDirection.o,
-          CardinalDirection.e,
-          CardinalDirection.so,
-          CardinalDirection.s,
-          CardinalDirection.se,
-        ])
+        for (final dir in directions)
           _DirectionButton(direction: dir, onTap: () => onDirectionMove(dir)),
       ],
     );
