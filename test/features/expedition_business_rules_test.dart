@@ -14,6 +14,89 @@ void main() {
       deps.dispose();
     });
 
+    test('Los tres niveles de Rumbo progresan de puntos cardinales a diagonales con obstáculos', () {
+      final game = deps.adventuresViewModel.findGame('rumbo_desconocido')!;
+
+      deps.gameplayViewModel.startNewSession(game: game, levelNumber: 1);
+      expect(deps.gameplayViewModel.rounds, hasLength(2));
+      expect(
+        deps.gameplayViewModel.rounds.every(
+          (round) => !round.instruction.contains('diagonal'),
+        ),
+        isTrue,
+      );
+
+      deps.gameplayViewModel.startNewSession(game: game, levelNumber: 2);
+      expect(
+        deps.gameplayViewModel.rounds.any(
+          (round) => round.instruction.toLowerCase().contains('combina'),
+        ),
+        isTrue,
+      );
+
+      deps.gameplayViewModel.startNewSession(game: game, levelNumber: 3);
+      expect(
+        deps.gameplayViewModel.rounds.every(
+          (round) => round.obstacles.isNotEmpty,
+        ),
+        isTrue,
+      );
+      expect(
+        deps.gameplayViewModel.rounds.any(
+          (round) => round.instruction.contains('diagonal'),
+        ),
+        isTrue,
+      );
+    });
+
+    test('La brújula mantiene aguja bicolor y ¿Dónde estoy? siempre ofrece tres pistas', () async {
+      final compassGame = deps.adventuresViewModel.findGame('brujula_perdida')!;
+      deps.gameplayViewModel.startNewSession(game: compassGame, levelNumber: 1);
+      expect(
+        deps.gameplayViewModel.rounds.every(
+          (round) => round.targetDirection.degrees % 90 == 0,
+        ),
+        isTrue,
+      );
+
+      deps.gameplayViewModel.startNewSession(game: compassGame, levelNumber: 3);
+      expect(
+        deps.gameplayViewModel.rounds.first.instruction,
+        contains('gira la brújula'),
+      );
+      deps.gameplayViewModel.setCompassDirection(
+        deps.gameplayViewModel.rounds.first.targetDirection,
+      );
+      expect(await deps.gameplayViewModel.submitCompassDirection(), isFalse);
+      expect(deps.gameplayViewModel.compassDirection.degrees, 90);
+
+      final whereAmIGame = deps.adventuresViewModel.findGame('donde_estoy')!;
+      expect(
+        whereAmIGame.howToPlayObjective,
+        contains('tres pistas espaciales'),
+      );
+      deps.gameplayViewModel.startNewSession(
+        game: whereAmIGame,
+        levelNumber: 1,
+      );
+      expect(
+        deps.gameplayViewModel.rounds.every((round) => round.clues.length == 3),
+        isTrue,
+      );
+    });
+
+    test(
+      'Una llegada equivocada en Rumbo activa el desvío divertido',
+      () async {
+        final game = deps.adventuresViewModel.findGame('rumbo_desconocido')!;
+        deps.gameplayViewModel.startNewSession(game: game, levelNumber: 1);
+
+        expect(await deps.gameplayViewModel.confirmRumboDestination(), isFalse);
+        expect(deps.gameplayViewModel.isFunnyDetourActive, isTrue);
+        expect(deps.gameplayViewModel.funnyDetourMessage, contains('charca'));
+      },
+    );
+
     test('1. Política docente de niveles: bloquear o habilitar Nivel 3 en 4.º A actualiza inmediatamente el acceso del alumno', () async {
       // Por defecto en 4.º A, España en tus manos tiene niveles 1 y 2 activos y el 3 desactivado
       expect(

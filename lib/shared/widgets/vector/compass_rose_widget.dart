@@ -118,7 +118,7 @@ class _CompassRosePainter extends CustomPainter {
       center,
       radius,
       Paint()
-        ..color = Colors.white
+        ..color = AppColors.surfaceVariant
         ..style = PaintingStyle.fill,
     );
     canvas.drawCircle(

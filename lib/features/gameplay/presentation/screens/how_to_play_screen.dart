@@ -10,6 +10,7 @@ import '../../../../shared/widgets/cards/status_badge.dart';
 import '../../../../shared/widgets/navigation/adventure_scaffold.dart';
 import '../../../../shared/widgets/navigation/app_top_bar.dart';
 import '../../../adventures/data/models/adventure_game_model.dart';
+import '../widgets/gameplay_backdrop.dart';
 
 /// Pantalla `Rumbo a lo desconocido — Antes de jugar` (`/games/:gameId/how-to`).
 class HowToPlayScreen extends StatelessWidget {
@@ -42,74 +43,114 @@ class HowToPlayScreen extends StatelessWidget {
         showBackButton: true,
         onBackPressed: onBack,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            AppBaseCard(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+      body: Stack(
+        children: [
+          Positioned.fill(child: GameplayBackdrop(gameId: game.id)),
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                AppBaseCard(
+                  backgroundColor: AppColors.cardBackground,
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      StatusBadge(
-                        label: AppStrings.howToPlayTag,
-                        variant: StatusBadgeVariant.brand,
-                        icon: game.icon,
+                      Row(
+                        children: [
+                          StatusBadge(
+                            label: AppStrings.howToPlayTag,
+                            variant: StatusBadgeVariant.brand,
+                            icon: game.icon,
+                          ),
+                          const Spacer(),
+                          StatusBadge(
+                            label: '+${levelInfo.rewardCoins} Brújulas',
+                            variant: StatusBadgeVariant.success,
+                          ),
+                        ],
                       ),
-                      const Spacer(),
-                      StatusBadge(
-                        label: '+${levelInfo.rewardCoins} Brújulas',
-                        variant: StatusBadgeVariant.success,
+                      const SizedBox(height: AppSpacing.md),
+                      Text(
+                        'Objetivo de la misión',
+                        style: AppTypography.titleMedium.copyWith(
+                          color: AppColors.brandPrimary,
+                        ),
                       ),
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        game.howToPlayObjective,
+                        style: AppTypography.bodyMedium.copyWith(
+                          color: AppColors.inkStrong,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      Text(
+                        'Cómo jugar',
+                        style: AppTypography.titleSmall.copyWith(
+                          color: AppColors.brandPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      for (var i = 0; i < game.howToPlaySteps.length; i++) ...[
+                        _InstructionStepRow(
+                          stepIndex: i + 1,
+                          text: game.howToPlaySteps[i],
+                        ),
+                        const SizedBox(height: AppSpacing.xs),
+                      ],
                     ],
                   ),
+                ),
+                if (game.id == 'donde_estoy') ...[
                   const SizedBox(height: AppSpacing.md),
-                  Text(
-                    'Objetivo de la misión',
-                    style: AppTypography.titleMedium.copyWith(
-                      color: AppColors.brandPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(
-                    game.howToPlayObjective,
-                    style: AppTypography.bodyMedium.copyWith(
-                      color: AppColors.inkStrong,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  Text(
-                    'Casillas para superar la prueba',
-                    style: AppTypography.titleSmall.copyWith(
-                      color: AppColors.brandPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  for (var i = 0; i < game.howToPlaySteps.length; i++) ...[
-                    _InstructionStepRow(
-                      stepIndex: i + 1,
-                      text: game.howToPlaySteps[i],
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                  ],
+                  const _ThreeClueInstructionCard(),
                 ],
-              ),
+                const SizedBox(height: AppSpacing.md),
+                const _BackpackTipCard(),
+                const SizedBox(height: AppSpacing.lg),
+                AppPrimaryButton(
+                  label: isResumingGame
+                      ? 'Volver a la partida en curso'
+                      : AppStrings.howToPlayStartButton,
+                  icon: Icons.play_arrow_rounded,
+                  onPressed: onStartOrResume,
+                ),
+              ],
             ),
-            const SizedBox(height: AppSpacing.md),
-            const _BackpackTipCard(),
-            const SizedBox(height: AppSpacing.lg),
-            AppPrimaryButton(
-              label: isResumingGame
-                  ? 'Volver a la partida en curso'
-                  : AppStrings.howToPlayStartButton,
-              icon: Icons.play_arrow_rounded,
-              onPressed: onStartOrResume,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ThreeClueInstructionCard extends StatelessWidget {
+  const _ThreeClueInstructionCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBaseCard(
+      backgroundColor: AppColors.surfaceVariant,
+      padding: const EdgeInsets.all(AppSpacing.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Detective: resuelve las 3 pistas',
+            style: AppTypography.titleMedium.copyWith(
+              color: AppColors.brandPrimary,
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            'Cada pista describe una relación espacial distinta. Lee las tres, cruza la información y descarta los lugares que no encajan. Después, marca el único territorio que cumple todas.',
+            style: AppTypography.bodyMedium.copyWith(
+              color: AppColors.inkStrong,
+            ),
+          ),
+        ],
       ),
     );
   }

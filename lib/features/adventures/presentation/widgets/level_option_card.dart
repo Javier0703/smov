@@ -28,7 +28,7 @@ class LevelOptionCard extends StatelessWidget {
       onTap: onSelect,
       backgroundColor: !canPlay
           ? AppColors.surfaceMuted.withValues(alpha: 0.7)
-          : (isSelected ? AppColors.surfaceElevated : Colors.white),
+          : (isSelected ? AppColors.surfaceElevated : AppColors.cardBackground),
       borderColor: isSelected
           ? AppColors.brandPrimary
           : AppColors.borderDefault,

@@ -27,7 +27,6 @@ class GameplayViewModel extends ChangeNotifier {
 
   // Estado de la brújula
   CardinalDirection _compassDirection = CardinalDirection.n;
-  bool _useMagneticNeedle = true;
 
   // Estado del mapa de España
   String? _selectedRegionId;
@@ -45,6 +44,8 @@ class GameplayViewModel extends ChangeNotifier {
   int _totalAttempts = 0;
   String? _feedbackMessage;
   bool _isFeedbackPositive = true;
+  bool _isFunnyDetourActive = false;
+  String? _funnyDetourMessage;
   GameSessionResultModel? _lastResult;
 
   AdventureGameModel? get activeGame => _activeGame;
@@ -61,7 +62,6 @@ class GameplayViewModel extends ChangeNotifier {
   String get selectedCartographySymbol => _selectedCartographySymbol;
 
   CardinalDirection get compassDirection => _compassDirection;
-  bool get useMagneticNeedle => _useMagneticNeedle;
 
   String? get selectedRegionId => _selectedRegionId;
   Set<String> get completedRegionIds =>
@@ -76,6 +76,8 @@ class GameplayViewModel extends ChangeNotifier {
   int get totalAttempts => _totalAttempts;
   String? get feedbackMessage => _feedbackMessage;
   bool get isFeedbackPositive => _isFeedbackPositive;
+  bool get isFunnyDetourActive => _isFunnyDetourActive;
+  String? get funnyDetourMessage => _funnyDetourMessage;
   GameSessionResultModel? get lastResult => _lastResult;
 
   UserModel get currentUser => _repository.getCurrentUser();
@@ -122,19 +124,16 @@ class GameplayViewModel extends ChangeNotifier {
       ..clear()
       ..add(round.startCoord);
     _selectedCartographySymbol = round.symbolLabel;
-    _compassDirection = CardinalDirection.n;
+    _compassDirection = round.startDirection;
     _selectedRegionId = null;
     _routeRegionIds.clear();
+    _isFunnyDetourActive = false;
+    _funnyDetourMessage = null;
     if (round.mechanic == ChallengeMechanicType.spainNeighborRoute) {
       _routeRegionIds.add(round.originRegionId);
     }
     _isHintRevealed = false;
     _feedbackMessage = null;
-  }
-
-  void toggleNeedleStyle() {
-    _useMagneticNeedle = !_useMagneticNeedle;
-    notifyListeners();
   }
 
   void selectCartographySymbol(String symbol) {
@@ -173,6 +172,8 @@ class GameplayViewModel extends ChangeNotifier {
   Future<bool> handleGridCellTap(GridCoord coord) async {
     final round = currentRound;
     if (round == null) return false;
+    _isFunnyDetourActive = false;
+    _funnyDetourMessage = null;
 
     if (round.obstacles.contains(coord)) {
       _totalAttempts++;
@@ -188,6 +189,7 @@ class GameplayViewModel extends ChangeNotifier {
       if (!_visitedCoords.contains(coord)) {
         _visitedCoords.add(coord);
       }
+
       if (coord == round.targetCoord) {
         _totalAttempts++;
         _correctAnswers++;
@@ -220,6 +222,34 @@ class GameplayViewModel extends ChangeNotifier {
       notifyListeners();
       return false;
     }
+  }
+
+  /// Confirma el destino alcanzado en `¡Rumbo desconocido!`.
+  Future<bool> confirmRumboDestination() async {
+    final round = currentRound;
+    if (round == null ||
+        _activeGame?.id != 'rumbo_desconocido' ||
+        round.mechanic != ChallengeMechanicType.gridNavigation) {
+      return false;
+    }
+
+    _totalAttempts++;
+    if (_explorerCoord == round.targetCoord) {
+      _correctAnswers++;
+      _feedbackMessage = '¡Destino alcanzado con precisión por casillas!';
+      _isFeedbackPositive = true;
+      return _advanceOrFinish();
+    }
+
+    _isFunnyDetourActive = true;
+    _funnyDetourMessage = _currentRoundIndex.isEven
+        ? '¡Chapuzón! Tu explorador acabó en la charca. Prueba otra ruta por casillas.'
+        : '¡Vaya tejado! Tu explorador aterrizó en el colegio. Revisa el rumbo y vuelve a intentarlo.';
+    _feedbackMessage =
+        'Todavía no estás en el destino. ¡Puedes intentarlo de nuevo!';
+    _isFeedbackPositive = false;
+    notifyListeners();
+    return false;
   }
 
   /// Comprueba el rumbo actual en `La brújula perdida`.

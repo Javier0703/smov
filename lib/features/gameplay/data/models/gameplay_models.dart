@@ -40,6 +40,7 @@ class GameRoundChallenge {
     this.startCoord = const GridCoord(4, 1),
     this.targetCoord = const GridCoord(1, 4),
     this.obstacles = const <GridCoord>[],
+    this.startDirection = CardinalDirection.n,
     this.targetDirection = CardinalDirection.ne,
     this.targetRegionId = 'castilla_y_leon',
     this.originRegionId = 'galicia',
@@ -58,6 +59,7 @@ class GameRoundChallenge {
   final GridCoord startCoord;
   final GridCoord targetCoord;
   final List<GridCoord> obstacles;
+  final CardinalDirection startDirection;
   final CardinalDirection targetDirection;
   final String targetRegionId;
   final String originRegionId;

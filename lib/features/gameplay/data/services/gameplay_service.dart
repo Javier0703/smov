@@ -76,69 +76,136 @@ class GameplayService {
   }
 
   List<GameRoundChallenge> _buildRumboRounds(int level) {
+    if (level <= 1) {
+      return const <GameRoundChallenge>[
+        GameRoundChallenge(
+          roundNumber: 1,
+          mechanic: ChallengeMechanicType.gridNavigation,
+          title: 'Colegio · Rumbo al patio',
+          instruction: 'Desde E2, avanza 3 casillas al Norte (N) hasta el patio del colegio, en B2.',
+          hint: 'El Norte está arriba. Mantente en la columna 2 y sube tres casillas.',
+          startCoord: GridCoord(4, 1),
+          targetCoord: GridCoord(1, 1),
+        ),
+        GameRoundChallenge(
+          roundNumber: 2,
+          mechanic: ChallengeMechanicType.gridNavigation,
+          title: 'Parque · Rumbo a la fuente',
+          instruction: 'Desde B2, avanza 2 casillas al Este (E) hasta la fuente del parque, en B4.',
+          hint: 'El Este está a la derecha. Mantente en la fila B y avanza dos casillas.',
+          startCoord: GridCoord(1, 1),
+          targetCoord: GridCoord(1, 3),
+        ),
+      ];
+    }
+
+    if (level == 2) {
+      return const <GameRoundChallenge>[
+        GameRoundChallenge(
+          roundNumber: 1,
+          mechanic: ChallengeMechanicType.gridNavigation,
+          title: 'Bosque · Rumbo a la cabaña',
+          instruction: 'Combina dos rumbos: desde E1, avanza 3 casillas al Norte y 2 al Este para llegar a la cabaña del bosque, en B3.',
+          hint: 'Combina dos rumbos: primero Norte y después Este.',
+          startCoord: GridCoord(4, 0),
+          targetCoord: GridCoord(1, 2),
+        ),
+        GameRoundChallenge(
+          roundNumber: 2,
+          mechanic: ChallengeMechanicType.gridNavigation,
+          title: 'Bosque · Rumbo al claro',
+          instruction: 'Desde E5, avanza 3 casillas al Norte y 3 al Oeste hasta el claro del bosque, en B2.',
+          hint: 'Combina Norte y Oeste para llegar a la fila B, columna 2.',
+          startCoord: GridCoord(4, 4),
+          targetCoord: GridCoord(1, 1),
+        ),
+      ];
+    }
+
     return <GameRoundChallenge>[
       const GameRoundChallenge(
         roundNumber: 1,
         mechanic: ChallengeMechanicType.gridNavigation,
-        title: 'Tramo 1 · Hacia el Refugio del Norte',
-        instruction: 'Desde tu casilla actual (E2), desplázate 3 casillas al Norte (N) y 2 casillas al Este (E) hasta llegar a la bandera del refugio.',
-        hint: 'En el tablero, subir 1 fila es avanzar 1 casilla al Norte y moverte a la derecha es ir al Este.',
-        startCoord: GridCoord(4, 1),
-        targetCoord: GridCoord(1, 3),
-        obstacles: <GridCoord>[GridCoord(2, 1), GridCoord(3, 4)],
-      ),
-      const GameRoundChallenge(
-        roundNumber: 2,
-        mechanic: ChallengeMechanicType.gridNavigation,
-        title: 'Tramo 2 · Rodeando el Lago Azul',
-        instruction: 'Avanza por casillas desde el campamento (B1) hasta el mirador (D5), evitando caer en las casillas de agua y roca.',
-        hint: 'El mirador está en la fila D (cuarta fila) y columna 5 (quinta columna).',
-        startCoord: GridCoord(1, 0),
-        targetCoord: GridCoord(3, 4),
-        obstacles: <GridCoord>[
-          GridCoord(2, 2),
-          GridCoord(2, 3),
-          GridCoord(1, 3),
-        ],
+        title: 'Ciudad · Diagonal al colegio',
+        instruction: 'Desde E5, avanza 3 casillas en diagonal al Noroeste (NO) hasta el colegio, en B2. Evita las obras.',
+        hint: 'El Noroeste combina Norte y Oeste; rodea la obra marcada en D4.',
+        startCoord: GridCoord(4, 4),
+        targetCoord: GridCoord(1, 1),
+        obstacles: <GridCoord>[GridCoord(3, 3)],
       ),
       GameRoundChallenge(
-        roundNumber: 3,
+        roundNumber: 2,
         mechanic: ChallengeMechanicType.gridNavigation,
-        title: 'Tramo 3 · Rumbo combinado Nivel $level',
-        instruction: 'Desplázate desde (E5) 3 casillas al Noroeste (NO) hasta alcanzar la cumbre señalizada en (B2).',
-        hint: 'Ir al Noroeste combina Norte (arriba) y Oeste (izquierda): llega a la fila B, columna 2.',
-        startCoord: const GridCoord(4, 4),
-        targetCoord: const GridCoord(1, 1),
-        obstacles: const <GridCoord>[GridCoord(3, 2), GridCoord(2, 4)],
+        title: 'Ciudad · Diagonal a la plaza',
+        instruction: 'Desde A1, avanza 3 casillas en diagonal al Sureste (SE) hasta la plaza, en D4, sin entrar en las obras.',
+        hint: 'El Sureste combina Sur y Este. Rodea las obras de la avenida central.',
+        startCoord: const GridCoord(0, 0),
+        targetCoord: const GridCoord(3, 3),
+        obstacles: const <GridCoord>[GridCoord(1, 1), GridCoord(2, 2)],
       ),
     ];
   }
 
   List<GameRoundChallenge> _buildBrujulaRounds(int level) {
-    return <GameRoundChallenge>[
-      const GameRoundChallenge(
+    if (level <= 1) {
+      return const <GameRoundChallenge>[
+        GameRoundChallenge(
+          roundNumber: 1,
+          mechanic: ChallengeMechanicType.compassCalibration,
+          title: 'Brújula · El Sol del Este',
+          instruction: 'El Sol sale por el Este. Gira la aguja roja y blanca hacia el Este (E).',
+          hint: 'El Este está a la derecha de la brújula.',
+          targetDirection: CardinalDirection.e,
+        ),
+        GameRoundChallenge(
+          roundNumber: 2,
+          mechanic: ChallengeMechanicType.compassCalibration,
+          title: 'Brújula · La Estrella Polar',
+          instruction: 'La Estrella Polar señala el Norte. Orienta la punta roja hacia el Norte (N).',
+          hint: 'El Norte está arriba de la brújula.',
+          targetDirection: CardinalDirection.n,
+        ),
+      ];
+    }
+
+    if (level == 2) {
+      return const <GameRoundChallenge>[
+        GameRoundChallenge(
+          roundNumber: 1,
+          mechanic: ChallengeMechanicType.compassCalibration,
+          title: 'Brújula · Rumbo entre Norte y Este',
+          instruction: 'El faro está entre el Norte y el Este. Gira la brújula hacia el Noreste (NE).',
+          hint: 'El Noreste está entre el Norte y el Este.',
+          targetDirection: CardinalDirection.ne,
+        ),
+        GameRoundChallenge(
+          roundNumber: 2,
+          mechanic: ChallengeMechanicType.compassCalibration,
+          title: 'Brújula · Rumbo entre Sur y Oeste',
+          instruction: 'La cueva está entre el Sur y el Oeste. Orienta la aguja hacia el Suroeste (SO).',
+          hint: 'El Suroeste está entre el Sur y el Oeste.',
+          targetDirection: CardinalDirection.so,
+        ),
+      ];
+    }
+
+    return const <GameRoundChallenge>[
+      GameRoundChallenge(
         roundNumber: 1,
         mechanic: ChallengeMechanicType.compassCalibration,
-        title: 'Calibración 1 · Amanecer en la sierra',
-        instruction: 'El Sol acaba de salir por las montañas. Gira la aguja magnética roja y blanca para apuntar exactamente hacia el Este (E).',
-        hint: 'El Sol sale por el Este (E), a la derecha de la rosa de los vientos (90°).',
+        title: 'Brújula · Gira desde el Norte',
+        instruction: 'Empieza mirando al Norte y gira la brújula 90° en sentido horario para fijar el rumbo.',
+        hint:
+            'Un giro de 90° en sentido horario desde el Norte apunta al Este.',
         targetDirection: CardinalDirection.e,
       ),
-      const GameRoundChallenge(
+      GameRoundChallenge(
         roundNumber: 2,
         mechanic: ChallengeMechanicType.compassCalibration,
-        title: 'Calibración 2 · Rumbo entre Norte y Este',
-        instruction: 'El faro costero se encuentra justo a mitad de camino entre el Norte y el Este. Apunta la brújula al Noreste (NE).',
-        hint:
-            'Busca las siglas NE en la esquina superior derecha de la esfera.',
-        targetDirection: CardinalDirection.ne,
-      ),
-      GameRoundChallenge(
-        roundNumber: 3,
-        mechanic: ChallengeMechanicType.compassCalibration,
-        title: 'Calibración 3 · Viento del Suroeste (Nivel $level)',
-        instruction: 'Una tormenta se acerca entre el Sur y el Oeste. Orienta la aguja hacia el Suroeste (SO) para avisar al campamento.',
-        hint: 'El Suroeste (SO) está entre el Sur (S, abajo) y el Oeste (O, izquierda).',
+        title: 'Brújula · Gira desde el Este',
+        instruction: 'Empieza mirando al Este y gira la brújula 135° en sentido horario para fijar el rumbo.',
+        hint: 'Desde el Este, gira pasando por el Sureste hasta llegar al Suroeste.',
+        startDirection: CardinalDirection.e,
         targetDirection: CardinalDirection.so,
       ),
     ];
@@ -324,6 +391,8 @@ class GameplayService {
           targetRegionId: 'madrid',
           clues: <String>[
             'Pregunta adaptada especialmente para la clase ${custom.classId}.',
+            'Pista de tu docente: ${custom.prompt}',
+            'Cruza esta pista con la indicación adicional: ${custom.hint}',
           ],
           options: <String>[
             custom.correctOption,
@@ -451,7 +520,7 @@ class GameplayService {
         mechanic: ChallengeMechanicType.spainNeighborRoute,
         mapMode: SpainMapMode.autonomousCommunities,
         title: 'Itinerario 1 · De Galicia a la Comunidad de Madrid',
-        instruction: 'Estás en GALICIA. Toca comunidades autónomas limítrofes (vecinas) paso a paso hasta llegar a la COMUNIDAD DE MADRID.',
+        instruction: 'Estás en GALICIA. Toca comunidades autónomas limítrofes (vecinas) tramo a tramo hasta llegar a la COMUNIDAD DE MADRID.',
         hint: 'Desde Galicia puedes pasar a Castilla y León, y desde Castilla y León entrar en Madrid.',
         originRegionId: 'galicia',
         targetRegionId: 'madrid',
@@ -537,7 +606,7 @@ class GameplayService {
         mechanic: ChallengeMechanicType.spainNeighborRoute,
         mapMode: SpainMapMode.autonomousCommunities,
         title: 'Prueba 7 de 7 · El Gran Viaje Ibérico',
-        instruction: 'Conecta el PRINCIPADO DE ASTURIAS con ARAGÓN avanzando paso a paso por comunidades autónomas limítrofes.',
+        instruction: 'Conecta el PRINCIPADO DE ASTURIAS con ARAGÓN avanzando tramo a tramo por comunidades autónomas limítrofes.',
         hint: 'Puedes ir de Asturias -> Castilla y León -> Aragón (o por Cantabria -> País Vasco -> Navarra -> Aragón).',
         originRegionId: 'asturias',
         targetRegionId: 'aragon',

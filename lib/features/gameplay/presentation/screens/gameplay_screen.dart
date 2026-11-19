@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../shared/models/user_model.dart';
 import '../../../../shared/widgets/buttons/app_icon_button.dart';
 import '../../../../shared/widgets/buttons/app_primary_button.dart';
 import '../../../../shared/widgets/buttons/app_secondary_button.dart';
@@ -12,9 +13,11 @@ import '../../../../shared/widgets/feedback/app_error_view.dart';
 import '../../../../shared/widgets/navigation/adventure_scaffold.dart';
 import '../../../../shared/widgets/navigation/app_top_bar.dart';
 import '../../../../shared/widgets/vector/compass_rose_widget.dart';
+import '../../../../shared/widgets/vector/explorer_avatar_widget.dart';
 import '../../../../shared/widgets/vector/spain_vector_map_widget.dart';
 import '../../data/models/gameplay_models.dart';
 import '../viewmodels/gameplay_viewmodel.dart';
+import '../widgets/gameplay_backdrop.dart';
 import '../widgets/grid_expedition_board.dart';
 import '../widgets/in_game_backpack_sheet.dart';
 
@@ -77,7 +80,7 @@ class GameplayScreen extends StatelessWidget {
                   showModalBottomSheet<void>(
                     context: context,
                     isScrollControlled: true,
-                    backgroundColor: Colors.white,
+                    backgroundColor: AppColors.cardBackground,
                     shape: const RoundedRectangleBorder(
                       borderRadius: BorderRadius.vertical(
                         top: Radius.circular(AppSpacing.radiusLg),
@@ -93,74 +96,79 @@ class GameplayScreen extends StatelessWidget {
               ),
             ],
           ),
-          body: LayoutBuilder(
-            builder: (context, constraints) {
-              final isTabletOrWide =
-                  constraints.maxWidth >= AppSpacing.compactBreakpoint;
+          body: Stack(
+            children: [
+              Positioned.fill(child: GameplayBackdrop(gameId: game.id)),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final isTabletOrWide =
+                      constraints.maxWidth >= AppSpacing.compactBreakpoint;
 
-              final boardSection = _InteractiveBoardSection(
-                viewModel: viewModel,
-                round: round,
-                onFinishedCheck: (completed) {
-                  if (completed && viewModel.lastResult != null) {
-                    onSessionCompleted(viewModel.lastResult!);
-                  }
-                },
-              );
+                  final boardSection = _InteractiveBoardSection(
+                    viewModel: viewModel,
+                    round: round,
+                    onFinishedCheck: (completed) {
+                      if (completed && viewModel.lastResult != null) {
+                        onSessionCompleted(viewModel.lastResult!);
+                      }
+                    },
+                  );
 
-              final missionPanelSection = _MissionControlSidePanel(
-                viewModel: viewModel,
-                round: round,
-                onOpenBackpack: () {
-                  showModalBottomSheet<void>(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: Colors.white,
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(AppSpacing.radiusLg),
+                  final missionPanelSection = _MissionControlSidePanel(
+                    viewModel: viewModel,
+                    round: round,
+                    onOpenBackpack: () {
+                      showModalBottomSheet<void>(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: AppColors.cardBackground,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(AppSpacing.radiusLg),
+                          ),
+                        ),
+                        builder: (_) => InGameBackpackSheet(
+                          inventoryCounts: viewModel.inventoryCounts,
+                          onUseItem: viewModel.useBackpackHelper,
+                          onOpenStore: onOpenStore,
+                        ),
+                      );
+                    },
+                    onFinishedCheck: (completed) {
+                      if (completed && viewModel.lastResult != null) {
+                        onSessionCompleted(viewModel.lastResult!);
+                      }
+                    },
+                  );
+
+                  if (isTabletOrWide) {
+                    return SingleChildScrollView(
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(flex: 6, child: boardSection),
+                          const SizedBox(width: AppSpacing.md),
+                          Expanded(flex: 5, child: missionPanelSection),
+                        ],
                       ),
-                    ),
-                    builder: (_) => InGameBackpackSheet(
-                      inventoryCounts: viewModel.inventoryCounts,
-                      onUseItem: viewModel.useBackpackHelper,
-                      onOpenStore: onOpenStore,
+                    );
+                  }
+
+                  return SingleChildScrollView(
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        missionPanelSection,
+                        const SizedBox(height: AppSpacing.md),
+                        boardSection,
+                      ],
                     ),
                   );
                 },
-                onFinishedCheck: (completed) {
-                  if (completed && viewModel.lastResult != null) {
-                    onSessionCompleted(viewModel.lastResult!);
-                  }
-                },
-              );
-
-              if (isTabletOrWide) {
-                return SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(flex: 6, child: boardSection),
-                      const SizedBox(width: AppSpacing.md),
-                      Expanded(flex: 5, child: missionPanelSection),
-                    ],
-                  ),
-                );
-              }
-
-              return SingleChildScrollView(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    missionPanelSection,
-                    const SizedBox(height: AppSpacing.md),
-                    boardSection,
-                  ],
-                ),
-              );
-            },
+              ),
+            ],
           ),
         );
       },
@@ -182,6 +190,7 @@ class _InteractiveBoardSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppBaseCard(
+      backgroundColor: AppColors.cardBackground,
       padding: const EdgeInsets.all(AppSpacing.md),
       child: switch (round.mechanic) {
         ChallengeMechanicType.compassCalibration => _CompassChallengeBoard(
@@ -245,6 +254,17 @@ class _GridChallengeWrapperBoard extends StatelessWidget {
             onFinishedCheck(finished);
           },
         ),
+        if (viewModel.activeGame?.id == 'rumbo_desconocido') ...[
+          const SizedBox(height: AppSpacing.sm),
+          AppSecondaryButton(
+            label: 'Comprobar el destino',
+            icon: Icons.check_circle_outline_rounded,
+            onPressed: () async {
+              final finished = await viewModel.confirmRumboDestination();
+              onFinishedCheck(finished);
+            },
+          ),
+        ],
       ],
     );
   }
@@ -300,21 +320,14 @@ class _CompassChallengeBoard extends StatelessWidget {
     return Column(
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Esfera de orientación',
+              viewModel.activeLevelNumber == 3
+                  ? 'Gira la brújula para fijar el rumbo'
+                  : 'Brújula de aguja roja (Norte) y blanca (Sur)',
               style: AppTypography.titleSmall.copyWith(
                 color: AppColors.brandPrimary,
-              ),
-            ),
-            TextButton.icon(
-              onPressed: viewModel.toggleNeedleStyle,
-              icon: const Icon(Icons.swap_horiz_rounded, size: 18),
-              label: Text(
-                viewModel.useMagneticNeedle
-                    ? 'Aguja magnética (Roja/Blanca)'
-                    : 'Aguja clásica (Verde)',
               ),
             ),
           ],
@@ -326,7 +339,8 @@ class _CompassChallengeBoard extends StatelessWidget {
             targetDirection: viewModel.isHintRevealed
                 ? round.targetDirection
                 : null,
-            useMagneticRedWhiteNeedle: viewModel.useMagneticNeedle,
+            useMagneticRedWhiteNeedle: true,
+            showCollateralLabels: viewModel.activeLevelNumber > 1,
             size: 248,
             onDirectionSelected: viewModel.setCompassDirection,
           ),
@@ -337,7 +351,11 @@ class _CompassChallengeBoard extends StatelessWidget {
           runSpacing: 6,
           alignment: WrapAlignment.center,
           children: [
-            for (final dir in CardinalDirection.values)
+            for (final dir in CardinalDirection.values.where(
+              (direction) =>
+                  viewModel.activeLevelNumber > 1 ||
+                  direction.degrees % 90 == 0,
+            ))
               ChoiceChip(
                 label: Text('${dir.code} (${dir.label})'),
                 selected: viewModel.compassDirection == dir,
@@ -377,6 +395,40 @@ class _SpainMapChallengeBoard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        if (round.mechanic == ChallengeMechanicType.whereAmIRiddle) ...[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  const Icon(
+                    Icons.my_location_rounded,
+                    color: AppColors.brandPrimary,
+                    size: 34,
+                  ),
+                  Container(
+                    width: 7,
+                    height: 7,
+                    decoration: const BoxDecoration(
+                      color: AppColors.danger,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(width: AppSpacing.xs),
+              Text(
+                'Encuentra la posición que cumple las 3 pistas',
+                style: AppTypography.labelMedium.copyWith(
+                  color: AppColors.brandPrimary,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.xs),
+        ],
         SpainVectorMapWidget(
           mode: round.mapMode,
           completedRegionIds: viewModel.completedRegionIds,
@@ -435,6 +487,7 @@ class _MissionControlSidePanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppBaseCard(
+      backgroundColor: AppColors.cardBackground,
       padding: const EdgeInsets.all(AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -470,6 +523,14 @@ class _MissionControlSidePanel extends StatelessWidget {
               color: AppColors.inkStrong,
             ),
           ),
+          if (viewModel.isFunnyDetourActive &&
+              viewModel.funnyDetourMessage != null) ...[
+            const SizedBox(height: AppSpacing.sm),
+            _FunnyDetourCard(
+              message: viewModel.funnyDetourMessage!,
+              avatarConfig: viewModel.currentUser.avatarConfig,
+            ),
+          ],
           if (round.clues.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.sm),
             _CluesScrollBox(clues: round.clues),
@@ -548,6 +609,58 @@ class _CluesScrollBox extends StatelessWidget {
                 ),
               ),
             ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FunnyDetourCard extends StatelessWidget {
+  const _FunnyDetourCard({required this.message, required this.avatarConfig});
+
+  final String message;
+  final AvatarConfig avatarConfig;
+
+  @override
+  Widget build(BuildContext context) {
+    final isPuddleLanding = message.contains('charca');
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.sm),
+      decoration: BoxDecoration(
+        color: AppColors.warningSurface,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+        border: Border.all(color: AppColors.warning),
+      ),
+      child: Row(
+        children: [
+          TweenAnimationBuilder<double>(
+            tween: Tween<double>(begin: -28, end: 0),
+            duration: const Duration(milliseconds: 650),
+            curve: Curves.bounceOut,
+            builder: (context, offset, child) =>
+                Transform.translate(offset: Offset(0, offset), child: child),
+            child: ExplorerAvatarWidget(
+              config: avatarConfig,
+              size: 38,
+              backgroundColor: AppColors.surfaceVariant,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.xs),
+          Icon(
+            isPuddleLanding ? Icons.pool_rounded : Icons.roofing_rounded,
+            color: AppColors.brandPrimary,
+            size: 28,
+          ),
+          const SizedBox(width: AppSpacing.xs),
+          Expanded(
+            child: Text(
+              message,
+              style: AppTypography.bodySmall.copyWith(
+                color: AppColors.inkStrong,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
         ],
       ),
     );

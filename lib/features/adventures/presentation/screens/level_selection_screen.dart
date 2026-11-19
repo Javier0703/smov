@@ -4,7 +4,6 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../shared/widgets/buttons/app_primary_button.dart';
-import '../../../../shared/widgets/buttons/app_secondary_button.dart';
 import '../../../../shared/widgets/cards/app_base_card.dart';
 import '../../../../shared/widgets/cards/status_badge.dart';
 import '../../../../shared/widgets/feedback/app_error_view.dart';
@@ -23,14 +22,12 @@ class LevelSelectionScreen extends StatelessWidget {
     required this.viewModel,
     required this.onBack,
     required this.onOpenHowToPlay,
-    required this.onStartLevel,
   });
 
   final String gameId;
   final AdventuresViewModel viewModel;
   final VoidCallback onBack;
   final void Function(AdventureGameModel game, int levelNumber) onOpenHowToPlay;
-  final void Function(AdventureGameModel game, int levelNumber) onStartLevel;
 
   @override
   Widget build(BuildContext context) {
@@ -89,21 +86,14 @@ class LevelSelectionScreen extends StatelessWidget {
                 const SizedBox(height: AppSpacing.sm),
                 AppPrimaryButton(
                   label: selectedLevel.canPlay
-                      ? 'Empezar Nivel ${selectedLevel.levelNumber}'
+                      ? 'Ver instrucciones del Nivel ${selectedLevel.levelNumber}'
                       : 'Nivel bloqueado (${selectedLevel.statusLabel})',
                   icon: selectedLevel.canPlay
-                      ? Icons.play_arrow_rounded
+                      ? Icons.menu_book_rounded
                       : Icons.lock_outline_rounded,
                   onPressed: selectedLevel.canPlay
-                      ? () => onStartLevel(game, selectedLevel.levelNumber)
+                      ? () => onOpenHowToPlay(game, selectedLevel.levelNumber)
                       : null,
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                AppSecondaryButton(
-                  label: 'Antes de jugar · Cómo se juega',
-                  icon: Icons.help_outline_rounded,
-                  onPressed: () =>
-                      onOpenHowToPlay(game, selectedLevel.levelNumber),
                 ),
               ],
             ),

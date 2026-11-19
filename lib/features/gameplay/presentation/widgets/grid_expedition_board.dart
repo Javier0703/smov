@@ -160,7 +160,7 @@ class _GridCellItem extends StatelessWidget {
     final rowLetter = String.fromCharCode(65 + coord.row);
     final coordLabel = '$rowLetter${coord.col + 1}';
 
-    Color bgColor = Colors.white;
+    Color bgColor = AppColors.cardBackground;
     Color borderColor = AppColors.borderDefault;
     if (isObstacle) {
       bgColor = const Color(0xFFD9E3EE);

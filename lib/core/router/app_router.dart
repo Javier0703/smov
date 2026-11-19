@@ -138,16 +138,6 @@ class AppRouter {
             onOpenHowToPlay: (game, levelNumber) {
               navigate(context, gameHowTo(game.id, level: levelNumber));
             },
-            onStartLevel: (game, levelNumber) {
-              dependencies.gameplayViewModel.startNewSession(
-                game: game,
-                levelNumber: levelNumber,
-              );
-              navigate(
-                context,
-                playSession(dependencies.gameplayViewModel.activeSessionId),
-              );
-            },
           ),
         );
       }

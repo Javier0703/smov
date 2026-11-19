@@ -139,7 +139,9 @@ class _BackpackHelperActionTile extends StatelessWidget {
     final hasStock = availableCount > 0;
     return AppBaseCard(
       padding: const EdgeInsets.all(AppSpacing.md),
-      backgroundColor: hasStock ? Colors.white : AppColors.surfaceMuted,
+      backgroundColor: hasStock
+          ? AppColors.cardBackground
+          : AppColors.surfaceMuted,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
