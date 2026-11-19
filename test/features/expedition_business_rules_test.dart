@@ -290,11 +290,25 @@ void main() {
       );
 
       final timedGame = deps.adventuresViewModel.findGame('llegar_a_tiempo')!;
+      deps.gameplayViewModel.startNewSession(game: timedGame, levelNumber: 1);
+      expect(
+        deps.gameplayViewModel.rounds.first.obstacleType,
+        GridObstacleType.rock,
+      );
+      deps.gameplayViewModel.startNewSession(game: timedGame, levelNumber: 2);
+      expect(
+        deps.gameplayViewModel.rounds.first.obstacleType,
+        GridObstacleType.river,
+      );
       deps.gameplayViewModel.startNewSession(game: timedGame, levelNumber: 3);
       expect(deps.gameplayViewModel.remainingSeconds, 120);
       expect(
         deps.gameplayViewModel.rounds.first.instruction,
         contains('Paso prohibido en el parque'),
+      );
+      expect(
+        deps.gameplayViewModel.rounds.first.obstacleType,
+        GridObstacleType.park,
       );
 
       final treasure = deps.adventuresViewModel.findGame('tesoro_secreto')!;
