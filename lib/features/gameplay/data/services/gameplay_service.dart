@@ -212,13 +212,64 @@ class GameplayService {
   }
 
   List<GameRoundChallenge> _buildEncuentraLugarRounds(int level) {
+    if (level == 1) {
+      return const <GameRoundChallenge>[
+        GameRoundChallenge(
+          roundNumber: 1,
+          mechanic: ChallengeMechanicType.gridCoordinateFind,
+          title: 'Lectura 1 · El Puente',
+          instruction: 'En el plano sencillo, encuentra y toca el puente en la casilla B4.',
+          hint: 'La fila B está debajo de A y la columna 4 está hacia la derecha.',
+          startCoord: GridCoord(4, 0),
+          targetCoord: GridCoord(1, 3),
+          symbolLabel: 'Puente',
+        ),
+        GameRoundChallenge(
+          roundNumber: 2,
+          mechanic: ChallengeMechanicType.gridCoordinateFind,
+          title: 'Lectura 2 · El Parque',
+          instruction: 'El plano tiene pocos elementos: toca el parque en D4.',
+          hint: 'Cuenta desde la izquierda: estás buscando la fila D y la columna 4.',
+          startCoord: GridCoord(1, 3),
+          targetCoord: GridCoord(3, 3),
+          symbolLabel: 'Parque',
+        ),
+      ];
+    }
+
+    if (level == 2) {
+      return const <GameRoundChallenge>[
+        GameRoundChallenge(
+          roundNumber: 1,
+          mechanic: ChallengeMechanicType.gridCoordinateFind,
+          title: 'Posición relativa · Al sur del parque',
+          instruction: '¿Qué hay al sur del parque (D4)? Toca el bosque en E4.',
+          hint: 'Mira hacia abajo desde el parque: la primera casilla al Sur es el bosque.',
+          startCoord: GridCoord(4, 0),
+          targetCoord: GridCoord(4, 3),
+          symbolLabel: 'Bosque',
+        ),
+        GameRoundChallenge(
+          roundNumber: 2,
+          mechanic: ChallengeMechanicType.gridCoordinateFind,
+          title: 'Posición relativa · Al oeste del colegio',
+          instruction:
+              '¿Qué lugar está al oeste del colegio (C2)? Toca el hospital.',
+          hint: 'El oeste está a la izquierda: desde C2 busca C1.',
+          startCoord: GridCoord(3, 3),
+          targetCoord: GridCoord(2, 0),
+          symbolLabel: 'Hospital',
+        ),
+      ];
+    }
+
     return const <GameRoundChallenge>[
       GameRoundChallenge(
         roundNumber: 1,
         mechanic: ChallengeMechanicType.gridCoordinateFind,
-        title: 'Lectura 1 · El Puente Colgante',
-        instruction: 'Localiza y toca en el plano la casilla donde se encuentra el Puente Colgante: fila B, columna 4 (B4).',
-        hint: 'Mira la letra B en el borde izquierdo y sigue hasta la columna número 4.',
+        title: 'Leyenda y escala · El Puente',
+        instruction: 'Usa la leyenda: el símbolo de puente vale 1 tramo. Localiza el puente a 2 tramos al Este del río (B2).',
+        hint: 'Desde B2, avanza 2 casillas hacia el Este hasta B4.',
         startCoord: GridCoord(4, 0),
         targetCoord: GridCoord(1, 3),
         symbolLabel: 'Puente',
@@ -226,48 +277,62 @@ class GameplayService {
       GameRoundChallenge(
         roundNumber: 2,
         mechanic: ChallengeMechanicType.gridCoordinateFind,
-        title: 'Lectura 2 · El Bosque de Pinos',
-        instruction: 'El Bosque de Pinos está situado 2 casillas al Sur del Puente (B4). Toca su casilla exacta (D4).',
-        hint: 'Bajar 2 casillas desde la fila B te lleva a la fila D en la misma columna 4.',
+        title: 'Leyenda y escala · Interpretación completa',
+        instruction: 'La leyenda muestra pinos en verde. Toca el bosque situado a 2 casillas al Sur del puente.',
+        hint: 'En la escala sencilla, bajar 2 casillas desde B4 lleva a D4.',
         startCoord: GridCoord(1, 3),
         targetCoord: GridCoord(3, 3),
         symbolLabel: 'Bosque',
-      ),
-      GameRoundChallenge(
-        roundNumber: 3,
-        mechanic: ChallengeMechanicType.gridCoordinateFind,
-        title: 'Lectura 3 · El Observatorio Astronómico',
-        instruction: 'Toca la casilla del Observatorio situado en el extremo Noroeste del mapa: coordenada A1.',
-        hint:
-            'El Noroeste es la esquina superior izquierda (Fila A, Columna 1).',
-        startCoord: GridCoord(3, 3),
-        targetCoord: GridCoord(0, 0),
-        symbolLabel: 'Cumbre',
       ),
     ];
   }
 
   List<GameRoundChallenge> _buildLlegarATiempoRounds(int level) {
+    if (level == 1) {
+      return const <GameRoundChallenge>[
+        GameRoundChallenge(
+          roundNumber: 1,
+          mechanic: ChallengeMechanicType.gridTimedPath,
+          title: 'Ruta 1 · Colegio al polideportivo',
+          instruction: 'Avanza desde el colegio (E1) hasta el polideportivo (B4) antes de que terminen 02:00 minutos.',
+          hint: 'Rodea las rocas grises y sigue por casillas despejadas.',
+          startCoord: GridCoord(4, 0),
+          targetCoord: GridCoord(1, 3),
+          obstacles: <GridCoord>[GridCoord(3, 1), GridCoord(2, 2)],
+        ),
+      ];
+    }
+
+    if (level == 2) {
+      return const <GameRoundChallenge>[
+        GameRoundChallenge(
+          roundNumber: 1,
+          mechanic: ChallengeMechanicType.gridTimedPath,
+          title: 'Ruta alternativa · Puente del río',
+          instruction: 'Llega al polideportivo usando el puente. El camino directo por el río está bloqueado.',
+          hint: 'Cruza por la fila C y evita las casillas de agua.',
+          startCoord: GridCoord(4, 0),
+          targetCoord: GridCoord(1, 3),
+          obstacles: <GridCoord>[
+            GridCoord(3, 1),
+            GridCoord(2, 2),
+            GridCoord(2, 3),
+          ],
+        ),
+      ];
+    }
+
     return const <GameRoundChallenge>[
       GameRoundChallenge(
         roundNumber: 1,
         mechanic: ChallengeMechanicType.gridTimedPath,
-        title: 'Ruta 1 · Sendero antes del anochecer',
-        instruction: 'Avanza casilla a casilla desde (E1) hasta la cabaña (B4) sin pisar las rocas grises para llegar a tiempo.',
-        hint: 'Puedes subir por la columna 1 hasta la fila B y luego avanzar al Este hasta B4.',
+        title: 'Restricción dinámica · Parque cerrado',
+        instruction: 'Paso prohibido en el parque. Busca una ruta alternativa desde el colegio hasta el polideportivo antes de 02:00.',
+        hint: 'Rodea el parque central cruzando por el norte o por el este.',
         startCoord: GridCoord(4, 0),
         targetCoord: GridCoord(1, 3),
-        obstacles: <GridCoord>[GridCoord(3, 1), GridCoord(2, 2)],
-      ),
-      GameRoundChallenge(
-        roundNumber: 2,
-        mechanic: ChallengeMechanicType.gridTimedPath,
-        title: 'Ruta 2 · Paso del desfiladero',
-        instruction: 'Guía al equipo desde (A2) hasta el helipuerto en (E5) eligiendo casillas despejadas.',
-        hint: 'Rodea la barrera central por el Este hasta alcanzar la esquina inferior derecha (E5).',
-        startCoord: GridCoord(0, 1),
-        targetCoord: GridCoord(4, 4),
         obstacles: <GridCoord>[
+          GridCoord(1, 2),
           GridCoord(2, 1),
           GridCoord(2, 2),
           GridCoord(2, 3),
@@ -277,6 +342,44 @@ class GameplayService {
   }
 
   List<GameRoundChallenge> _buildTesoroSecretoRounds(int level) {
+    if (level == 1) {
+      return const <GameRoundChallenge>[
+        GameRoundChallenge(
+          roundNumber: 1,
+          mechanic: ChallengeMechanicType.gridTreasureClues,
+          title: 'Pergamino 1 · Dos pistas',
+          instruction: 'Desde el faro (D2), sube 2 casillas al Norte y 2 al Este. Toca la casilla del tesoro.',
+          hint: 'Camina D2 -> B2 -> B4.',
+          startCoord: GridCoord(3, 1),
+          targetCoord: GridCoord(1, 3),
+          clues: <String>[
+            '1. Parte desde el Faro Antiguo en D2.',
+            '2. Avanza 2 casillas al Norte y 2 al Este.',
+          ],
+        ),
+      ];
+    }
+
+    if (level == 2) {
+      return const <GameRoundChallenge>[
+        GameRoundChallenge(
+          roundNumber: 1,
+          mechanic: ChallengeMechanicType.gridTreasureClues,
+          title: 'Pergamino 2 · Pistas y leyenda',
+          instruction: 'La leyenda muestra el tesoro bajo la palmera. Sigue el norte, el este y el sur.',
+          hint:
+              'Empieza en D2, sube a B2, gira al Este y baja al Sur hasta D4.',
+          startCoord: GridCoord(3, 1),
+          targetCoord: GridCoord(3, 3),
+          clues: <String>[
+            '1. Parte desde D2.',
+            '2. Camina 2 casillas al Norte.',
+            '3. Avanza 2 casillas al Este y una al Sur.',
+          ],
+        ),
+      ];
+    }
+
     return const <GameRoundChallenge>[
       GameRoundChallenge(
         roundNumber: 1,
@@ -310,6 +413,59 @@ class GameplayService {
   }
 
   List<GameRoundChallenge> _buildConstruyeMapaRounds(int level) {
+    if (level == 1) {
+      return const <GameRoundChallenge>[
+        GameRoundChallenge(
+          roundNumber: 1,
+          mechanic: ChallengeMechanicType.cartographyBuilder,
+          title: 'Plano 1 · Parque al Norte',
+          instruction:
+              'Arrastra el parque al norte del colegio, en la casilla A3.',
+          hint: 'El Norte está en la primera fila, encima del colegio.',
+          startCoord: GridCoord(2, 2),
+          targetCoord: GridCoord(0, 2),
+          symbolLabel: 'Parque',
+        ),
+        GameRoundChallenge(
+          roundNumber: 2,
+          mechanic: ChallengeMechanicType.cartographyBuilder,
+          title: 'Plano 2 · Hospital al Este',
+          instruction:
+              'Arrastra el hospital al este del parque, en la casilla A5.',
+          hint: 'El Este está a la derecha del parque.',
+          startCoord: GridCoord(0, 2),
+          targetCoord: GridCoord(0, 4),
+          symbolLabel: 'Hospital',
+        ),
+      ];
+    }
+
+    if (level == 2) {
+      return const <GameRoundChallenge>[
+        GameRoundChallenge(
+          roundNumber: 1,
+          mechanic: ChallengeMechanicType.cartographyBuilder,
+          title: 'Plano comarcal · Hospital al Este',
+          instruction:
+              'Arrastra el hospital al este del parque. Colócalo en D4.',
+          hint: 'El Este está a la derecha del parque.',
+          startCoord: GridCoord(2, 2),
+          targetCoord: GridCoord(3, 3),
+          symbolLabel: 'Hospital',
+        ),
+        GameRoundChallenge(
+          roundNumber: 2,
+          mechanic: ChallengeMechanicType.cartographyBuilder,
+          title: 'Plano comarcal · Casa al Oeste',
+          instruction: 'Arrastra una casa al oeste del colegio.',
+          hint: 'El Oeste está a la izquierda.',
+          startCoord: GridCoord(3, 3),
+          targetCoord: GridCoord(2, 0),
+          symbolLabel: 'Casa',
+        ),
+      ];
+    }
+
     return const <GameRoundChallenge>[
       GameRoundChallenge(
         roundNumber: 1,

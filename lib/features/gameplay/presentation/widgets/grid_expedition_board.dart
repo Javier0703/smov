@@ -20,6 +20,8 @@ class GridExpeditionBoard extends StatelessWidget {
     required this.showCompassBoost,
     required this.onCellTap,
     required this.onDirectionMove,
+    this.placedSymbols = const <GridCoord, String>{},
+    this.onSymbolPlaced,
   });
 
   final GameRoundChallenge round;
@@ -30,6 +32,8 @@ class GridExpeditionBoard extends StatelessWidget {
   final bool showCompassBoost;
   final ValueChanged<GridCoord> onCellTap;
   final ValueChanged<CardinalDirection> onDirectionMove;
+  final Map<GridCoord, String> placedSymbols;
+  final void Function(String symbol, GridCoord coord)? onSymbolPlaced;
 
   static const int _gridSize = 5;
 
@@ -113,6 +117,8 @@ class GridExpeditionBoard extends StatelessWidget {
                         avatarConfig: avatarConfig,
                         mechanic: round.mechanic,
                         onTap: () => onCellTap(GridCoord(row, col)),
+                        placedSymbol: placedSymbols[GridCoord(row, col)],
+                        onSymbolPlaced: onSymbolPlaced,
                       ),
                     ),
                   ),
@@ -142,6 +148,8 @@ class _GridCellItem extends StatelessWidget {
     required this.avatarConfig,
     required this.mechanic,
     required this.onTap,
+    this.placedSymbol,
+    this.onSymbolPlaced,
   });
 
   final GridCoord coord;
@@ -154,6 +162,8 @@ class _GridCellItem extends StatelessWidget {
   final AvatarConfig avatarConfig;
   final ChallengeMechanicType mechanic;
   final VoidCallback onTap;
+  final String? placedSymbol;
+  final void Function(String symbol, GridCoord coord)? onSymbolPlaced;
 
   @override
   Widget build(BuildContext context) {
@@ -182,56 +192,81 @@ class _GridCellItem extends StatelessWidget {
       child: Semantics(
         button: true,
         label: 'Casilla $coordLabel',
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            decoration: BoxDecoration(
-              color: bgColor,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: borderColor,
-                width: (isExplorerHere || isHintHighlighted) ? 2.2 : 1.3,
+        child: DragTarget<String>(
+          onAcceptWithDetails: (details) {
+            onSymbolPlaced?.call(details.data, coord);
+          },
+          builder: (context, candidateData, rejectedData) => InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: borderColor,
+                  width: (isExplorerHere || isHintHighlighted) ? 2.2 : 1.3,
+                ),
               ),
-            ),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Positioned(
-                  top: 3,
-                  left: 5,
-                  child: Text(
-                    coordLabel,
-                    style: AppTypography.bodySmall.copyWith(
-                      fontSize: 9.5,
-                      color: AppColors.textMuted.withValues(alpha: 0.7),
-                      fontWeight: FontWeight.w700,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Positioned(
+                    top: 3,
+                    left: 5,
+                    child: Text(
+                      coordLabel,
+                      style: AppTypography.bodySmall.copyWith(
+                        fontSize: 9.5,
+                        color: AppColors.textMuted.withValues(alpha: 0.7),
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
-                ),
-                if (isObstacle)
-                  const Icon(
-                    Icons.landscape_rounded,
-                    color: AppColors.textMuted,
-                    size: 24,
-                  )
-                else if (isExplorerHere)
-                  ExplorerAvatarWidget(
-                    config: avatarConfig,
-                    size: 38,
-                    showBackgroundCircle: false,
-                  )
-                else if (isTargetHere && showTargetFlag)
-                  Icon(
-                    mechanic == ChallengeMechanicType.gridTreasureClues
-                        ? Icons.diamond_rounded
-                        : Icons.flag_rounded,
-                    color: AppColors.success,
-                    size: 26,
-                  )
-                else if (mechanic == ChallengeMechanicType.gridCoordinateFind)
-                  _LandmarkSeedIcon(coord: coord),
-              ],
+                  if (isObstacle)
+                    const Icon(
+                      Icons.landscape_rounded,
+                      color: AppColors.textMuted,
+                      size: 24,
+                    )
+                  else if (isExplorerHere)
+                    ExplorerAvatarWidget(
+                      config: avatarConfig,
+                      size: 38,
+                      showBackgroundCircle: false,
+                    )
+                  else if (isTargetHere && showTargetFlag)
+                    Icon(
+                      mechanic == ChallengeMechanicType.gridTreasureClues
+                          ? Icons.diamond_rounded
+                          : Icons.flag_rounded,
+                      color: AppColors.success,
+                      size: 26,
+                    )
+                  else if (placedSymbol != null)
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.place_rounded,
+                          color: AppColors.brandPrimary,
+                          size: 22,
+                        ),
+                        Text(
+                          placedSymbol!,
+                          style: AppTypography.labelSmall.copyWith(
+                            fontSize: 8,
+                            color: AppColors.brandPrimary,
+                            fontWeight: FontWeight.w800,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    )
+                  else if (mechanic == ChallengeMechanicType.gridCoordinateFind)
+                    _LandmarkSeedIcon(coord: coord),
+                ],
+              ),
             ),
           ),
         ),

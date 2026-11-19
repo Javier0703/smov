@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 
 import '../../../../core/errors/result.dart';
@@ -47,6 +49,10 @@ class GameplayViewModel extends ChangeNotifier {
   bool _isFunnyDetourActive = false;
   String? _funnyDetourMessage;
   GameSessionResultModel? _lastResult;
+  Timer? _sessionTimer;
+  int _remainingSeconds = 120;
+  final Map<GridCoord, String> _placedCartographySymbols =
+      <GridCoord, String>{};
 
   AdventureGameModel? get activeGame => _activeGame;
   int get activeLevelNumber => _activeLevelNumber;
@@ -79,6 +85,9 @@ class GameplayViewModel extends ChangeNotifier {
   bool get isFunnyDetourActive => _isFunnyDetourActive;
   String? get funnyDetourMessage => _funnyDetourMessage;
   GameSessionResultModel? get lastResult => _lastResult;
+  int get remainingSeconds => _remainingSeconds;
+  Map<GridCoord, String> get placedCartographySymbols =>
+      Map<GridCoord, String>.unmodifiable(_placedCartographySymbols);
 
   UserModel get currentUser => _repository.getCurrentUser();
   Map<String, int> get inventoryCounts => _repository.getInventoryCounts();
@@ -111,8 +120,30 @@ class GameplayViewModel extends ChangeNotifier {
     _bonusSeconds = 0;
     _completedRegionIds.clear();
     _newlyStampedCommunities.clear();
+    _placedCartographySymbols.clear();
+    _remainingSeconds = 120;
+    _sessionTimer?.cancel();
+    if (game.id == 'llegar_a_tiempo') {
+      _sessionTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (_remainingSeconds <= 0) {
+          _sessionTimer?.cancel();
+          _feedbackMessage =
+              'Se acabó el tiempo. Busca otra ruta y vuelve a intentarlo.';
+          _isFeedbackPositive = false;
+        } else {
+          _remainingSeconds--;
+        }
+        notifyListeners();
+      });
+    }
     _setupCurrentRoundState();
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _sessionTimer?.cancel();
+    super.dispose();
   }
 
   void _setupCurrentRoundState() {
@@ -206,6 +237,10 @@ class GameplayViewModel extends ChangeNotifier {
       }
     }
 
+    if (round.mechanic == ChallengeMechanicType.cartographyBuilder) {
+      return placeCartographySymbol(_selectedCartographySymbol, coord);
+    }
+
     // Para Encuentra el lugar, El tesoro secreto y Construye el mapa: validación directa de objetivo
     _totalAttempts++;
     _explorerCoord = coord;
@@ -271,6 +306,29 @@ class GameplayViewModel extends ChangeNotifier {
       notifyListeners();
       return false;
     }
+  }
+
+  Future<bool> placeCartographySymbol(String symbol, GridCoord coord) async {
+    final round = currentRound;
+    if (round == null ||
+        round.mechanic != ChallengeMechanicType.cartographyBuilder) {
+      return false;
+    }
+
+    _totalAttempts++;
+    if (symbol == round.symbolLabel && coord == round.targetCoord) {
+      _placedCartographySymbols[coord] = symbol;
+      _correctAnswers++;
+      _feedbackMessage =
+          '¡Plano construido! $symbol colocado en la casilla correcta.';
+      _isFeedbackPositive = true;
+      return _advanceOrFinish();
+    }
+
+    _feedbackMessage = 'Ese símbolo no corresponde a la pista de esta casilla. Revisa el Norte, Sur, Este u Oeste.';
+    _isFeedbackPositive = false;
+    notifyListeners();
+    return false;
   }
 
   /// Selecciona una opción en `¿Dónde estoy?`.
@@ -378,6 +436,7 @@ class GameplayViewModel extends ChangeNotifier {
           _feedbackMessage = 'Lupa de pistas activada: se ha resaltado la solución y la pista detallada.';
         } else if (itemId == 'hourglass') {
           _bonusSeconds += 20;
+          _remainingSeconds += 20;
           _feedbackMessage = 'Reloj de arena activado: +20 segundos extra de margen en esta misión.';
         } else if (itemId == 'special_compass') {
           _isCompassBoostActive = true;
@@ -417,6 +476,8 @@ class GameplayViewModel extends ChangeNotifier {
   Future<GameSessionResultModel?> finishCurrentSession() async {
     final game = _activeGame;
     if (game == null) return null;
+    _sessionTimer?.cancel();
+    _sessionTimer = null;
 
     final levelInfo = game.levels
         .where((l) => l.levelNumber == _activeLevelNumber)

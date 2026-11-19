@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smov/core/di/app_dependencies.dart';
+import 'package:smov/features/gameplay/data/models/gameplay_models.dart';
 import 'package:smov/shared/models/user_model.dart';
 
 void main() {
@@ -96,6 +97,59 @@ void main() {
         expect(deps.gameplayViewModel.funnyDetourMessage, contains('charca'));
       },
     );
+
+    test('Los juegos 3-6 aplican nivel, temporizador, pistas y colocación de símbolos', () async {
+      final findPlace = deps.adventuresViewModel.findGame('encuentra_lugar')!;
+      deps.gameplayViewModel.startNewSession(game: findPlace, levelNumber: 1);
+      expect(
+        deps.gameplayViewModel.rounds.first.instruction,
+        contains('plano sencillo'),
+      );
+      deps.gameplayViewModel.startNewSession(game: findPlace, levelNumber: 2);
+      expect(
+        deps.gameplayViewModel.rounds.first.instruction,
+        contains('al sur del parque'),
+      );
+      deps.gameplayViewModel.startNewSession(game: findPlace, levelNumber: 3);
+      expect(
+        deps.gameplayViewModel.rounds.first.title,
+        contains('Leyenda y escala'),
+      );
+
+      final timedGame = deps.adventuresViewModel.findGame('llegar_a_tiempo')!;
+      deps.gameplayViewModel.startNewSession(game: timedGame, levelNumber: 3);
+      expect(deps.gameplayViewModel.remainingSeconds, 120);
+      expect(
+        deps.gameplayViewModel.rounds.first.instruction,
+        contains('Paso prohibido en el parque'),
+      );
+
+      final treasure = deps.adventuresViewModel.findGame('tesoro_secreto')!;
+      deps.gameplayViewModel.startNewSession(game: treasure, levelNumber: 1);
+      expect(deps.gameplayViewModel.rounds.first.clues, hasLength(2));
+
+      final mapBuilder = deps.adventuresViewModel.findGame('construye_mapa')!;
+      deps.gameplayViewModel.startNewSession(game: mapBuilder, levelNumber: 1);
+      expect(
+        await deps.gameplayViewModel.placeCartographySymbol(
+          'Hospital',
+          const GridCoord(0, 2),
+        ),
+        isFalse,
+      );
+      await deps.gameplayViewModel.placeCartographySymbol(
+        'Parque',
+        const GridCoord(0, 2),
+      );
+      expect(
+        deps.gameplayViewModel.placedCartographySymbols[const GridCoord(0, 2)],
+        'Parque',
+      );
+      expect(
+        deps.gameplayViewModel.currentRound?.mechanic,
+        ChallengeMechanicType.cartographyBuilder,
+      );
+    });
 
     test('1. Política docente de niveles: bloquear o habilitar Nivel 3 en 4.º A actualiza inmediatamente el acceso del alumno', () async {
       // Por defecto en 4.º A, España en tus manos tiene niveles 1 y 2 activos y el 3 desactivado

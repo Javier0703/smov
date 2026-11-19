@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/utils/formatters.dart';
 import '../../../../shared/models/user_model.dart';
 import '../../../../shared/widgets/buttons/app_icon_button.dart';
 import '../../../../shared/widgets/buttons/app_primary_button.dart';
@@ -231,6 +232,50 @@ class _GridChallengeWrapperBoard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        if (round.mechanic == ChallengeMechanicType.gridCoordinateFind &&
+            viewModel.activeLevelNumber == 3) ...[
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.sm),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceMuted,
+              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+              border: Border.all(color: AppColors.borderDefault),
+            ),
+            child: Wrap(
+              spacing: AppSpacing.md,
+              runSpacing: AppSpacing.xs,
+              alignment: WrapAlignment.center,
+              children: [
+                const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.park_rounded, color: AppColors.success),
+                    SizedBox(width: 6),
+                    Text('Leyenda: parque'),
+                  ],
+                ),
+                const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.commit_rounded, color: Color(0xFFD97706)),
+                    SizedBox(width: 6),
+                    Text('Puente'),
+                  ],
+                ),
+                Text(
+                  viewModel.activeLevelNumber == 3
+                      ? 'Escala: 1 tramo = 1 casilla'
+                      : 'Escala: usa filas y columnas',
+                  style: AppTypography.labelMedium.copyWith(
+                    color: AppColors.brandPrimary,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+        ],
         if (round.mechanic == ChallengeMechanicType.cartographyBuilder) ...[
           _CartographySymbolBar(
             selectedSymbol: viewModel.selectedCartographySymbol,
@@ -251,6 +296,14 @@ class _GridChallengeWrapperBoard extends StatelessWidget {
           },
           onDirectionMove: (dir) async {
             final finished = await viewModel.moveByDirection(dir);
+            onFinishedCheck(finished);
+          },
+          placedSymbols: viewModel.placedCartographySymbols,
+          onSymbolPlaced: (symbol, coord) async {
+            final finished = await viewModel.placeCartographySymbol(
+              symbol,
+              coord,
+            );
             onFinishedCheck(finished);
           },
         ),
@@ -280,6 +333,11 @@ class _CartographySymbolBar extends StatelessWidget {
   final ValueChanged<String> onSelectSymbol;
 
   static const List<(String, IconData)> _symbols = <(String, IconData)>[
+    ('Colegio', Icons.school_rounded),
+    ('Árbol', Icons.park_rounded),
+    ('Parque', Icons.park_rounded),
+    ('Hospital', Icons.local_hospital_rounded),
+    ('Casa', Icons.home_rounded),
     ('Cordillera', Icons.terrain_rounded),
     ('Puerto', Icons.directions_boat_rounded),
     ('Bosque', Icons.park_rounded),
@@ -293,11 +351,30 @@ class _CartographySymbolBar extends StatelessWidget {
       runSpacing: AppSpacing.xs,
       children: [
         for (final item in _symbols)
-          ChoiceChip(
-            label: Text(item.$1),
-            avatar: Icon(item.$2, size: 16),
-            selected: selectedSymbol == item.$1,
-            onSelected: (_) => onSelectSymbol(item.$1),
+          Draggable<String>(
+            data: item.$1,
+            feedback: Material(
+              color: Colors.transparent,
+              child: Chip(
+                avatar: Icon(item.$2, size: 16),
+                label: Text(item.$1),
+              ),
+            ),
+            childWhenDragging: Opacity(
+              opacity: 0.35,
+              child: ChoiceChip(
+                label: Text(item.$1),
+                avatar: Icon(item.$2, size: 16),
+                selected: false,
+                onSelected: null,
+              ),
+            ),
+            child: ChoiceChip(
+              label: Text(item.$1),
+              avatar: Icon(item.$2, size: 16),
+              selected: selectedSymbol == item.$1,
+              onSelected: (_) => onSelectSymbol(item.$1),
+            ),
           ),
       ],
     );
@@ -501,6 +578,18 @@ class _MissionControlSidePanel extends StatelessWidget {
                 icon: Icons.flag_rounded,
               ),
               const Spacer(),
+              if (viewModel.activeGame?.id == 'llegar_a_tiempo')
+                StatusBadge(
+                  label: AppFormatters.formatCountdown(
+                    viewModel.remainingSeconds,
+                  ),
+                  variant: viewModel.remainingSeconds <= 30
+                      ? StatusBadgeVariant.danger
+                      : StatusBadgeVariant.warning,
+                  icon: Icons.timer_rounded,
+                ),
+              if (viewModel.activeGame?.id == 'llegar_a_tiempo')
+                const SizedBox(width: AppSpacing.xs),
               if (viewModel.bonusSeconds > 0)
                 StatusBadge(
                   label: '+${viewModel.bonusSeconds} s extra',
