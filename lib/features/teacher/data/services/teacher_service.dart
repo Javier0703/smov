@@ -15,6 +15,23 @@ class TeacherService {
   Set<int> getEnabledLevels(String classId, String gameId) =>
       _store.enabledLevelsForClassGame(classId, gameId);
 
+  int getCourseGrade(String classId) => _store.courseGradeForClass(classId);
+
+  void updateCourseGrade({required String classId, required int grade}) {
+    _store.setCourseGradeForClass(classId: classId, grade: grade);
+  }
+
+  bool isGameEnabled(String classId, String gameId) =>
+      _store.isGameEnabledForClass(classId, gameId);
+
+  void updateGamePolicy({
+    required String classId,
+    required String gameId,
+    required bool enabled,
+  }) {
+    _store.toggleGamePolicy(classId: classId, gameId: gameId, enabled: enabled);
+  }
+
   void updateLevelPolicy({
     required String classId,
     required String gameId,
@@ -51,16 +68,21 @@ class TeacherService {
       required String strength,
       required String reinforcement,
     }) {
-      final studentSessions = sessions.where((s) => s.studentId == id).toList();
+      final studentSessions = sessions
+          .where((s) => s.studentId == id && s.classId == classId)
+          .toList();
       var sumCorrect = 0;
       var sumAttempts = 0;
+      var totalCoinsEarned = 0;
       for (final s in studentSessions) {
         sumCorrect += s.correctAnswers;
         sumAttempts += s.totalAttempts;
+        totalCoinsEarned += s.coinsEarned;
       }
       final weightedPct = sumAttempts == 0
-          ? 80
+          ? 0
           : ((sumCorrect / sumAttempts) * 100).round();
+      final mostDifficultGameTitle = _mostDifficultGame(studentSessions);
 
       return StudentRosterSummary(
         studentId: id,
@@ -70,11 +92,13 @@ class TeacherService {
         weightedAccuracyPercent: weightedPct,
         totalCorrect: sumCorrect,
         totalAttempts: sumAttempts,
+        totalCoinsEarned: totalCoinsEarned,
         completedMissions: completedMissions,
         medalsCount: medals,
         stampedCommunitiesCount: stamps,
         strengthTopic: strength,
         reinforcementTopic: reinforcement,
+        mostDifficultGameTitle: mostDifficultGameTitle,
         sessions: studentSessions,
       );
     }
@@ -159,5 +183,30 @@ class TeacherService {
         reinforcement: 'Límites entre comunidades del interior',
       ),
     ];
+  }
+
+  String _mostDifficultGame(List<SessionRecord> sessions) {
+    final grouped = <String, List<SessionRecord>>{};
+    for (final session in sessions) {
+      grouped.putIfAbsent(session.gameId, () => <SessionRecord>[]).add(session);
+    }
+    if (grouped.isEmpty) return 'Sin datos suficientes';
+    final hardest = grouped.entries.reduce((current, next) {
+      int accuracy(List<SessionRecord> gameSessions) {
+        final attempts = gameSessions.fold<int>(
+          0,
+          (sum, session) => sum + session.totalAttempts,
+        );
+        if (attempts == 0) return 100;
+        final correct = gameSessions.fold<int>(
+          0,
+          (sum, session) => sum + session.correctAnswers,
+        );
+        return (correct * 100 / attempts).round();
+      }
+
+      return accuracy(next.value) < accuracy(current.value) ? next : current;
+    });
+    return hardest.value.first.gameTitle;
   }
 }

@@ -19,6 +19,29 @@ class CicloEscolar {
     gradeNumber: 4,
   );
 
+  static CicloEscolar forClassId(String classId) {
+    final normalizedId = classId.replaceAll(RegExp(r'[^0-9]'), '');
+    final grade = normalizedId.isEmpty ? 4 : int.parse(normalizedId);
+    final section = classId.trim().endsWith('B') ? 'B' : 'A';
+    return defaultClasses.firstWhere(
+      (schoolClass) =>
+          schoolClass.gradeNumber == grade &&
+          schoolClass.className.endsWith(section),
+      orElse: () => defaultClasses.firstWhere(
+        (schoolClass) =>
+            schoolClass.gradeNumber == grade &&
+            schoolClass.className.endsWith('A'),
+        orElse: () => segundoCiclo,
+      ),
+    );
+  }
+
+  static int maximumLevelForGrade(int grade) => switch (grade) {
+    <= 1 => 1,
+    2 => 2,
+    _ => 3,
+  };
+
   CicloEscolar copyWith({
     String? classId,
     String? className,
@@ -50,6 +73,18 @@ class CicloEscolar {
   }
 
   static const List<CicloEscolar> defaultClasses = <CicloEscolar>[
+    CicloEscolar(
+      classId: '1A',
+      className: '1.º A',
+      gradeLabel: '1.º de Primaria',
+      gradeNumber: 1,
+    ),
+    CicloEscolar(
+      classId: '2A',
+      className: '2.º A',
+      gradeLabel: '2.º de Primaria',
+      gradeNumber: 2,
+    ),
     CicloEscolar(
       classId: '3A',
       className: '3.º A',

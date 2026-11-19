@@ -50,6 +50,7 @@ class CustomQuestionData {
     required this.distractorA,
     required this.distractorB,
     required this.hint,
+    this.targetRegionId = 'asturias',
     required this.isPublished,
     required this.updatedAtIso,
   });
@@ -63,6 +64,7 @@ class CustomQuestionData {
   final String distractorA;
   final String distractorB;
   final String hint;
+  final String targetRegionId;
   final bool isPublished;
   final String updatedAtIso;
 
@@ -75,6 +77,7 @@ class CustomQuestionData {
     String? distractorA,
     String? distractorB,
     String? hint,
+    String? targetRegionId,
     bool? isPublished,
     String? updatedAtIso,
   }) {
@@ -88,6 +91,7 @@ class CustomQuestionData {
       distractorA: distractorA ?? this.distractorA,
       distractorB: distractorB ?? this.distractorB,
       hint: hint ?? this.hint,
+      targetRegionId: targetRegionId ?? this.targetRegionId,
       isPublished: isPublished ?? this.isPublished,
       updatedAtIso: updatedAtIso ?? this.updatedAtIso,
     );
@@ -170,6 +174,9 @@ class ExpeditionStateStore extends ChangeNotifier {
   /// Política docente de niveles habilitados por clase y juego (`classId` -> `gameId` -> `Set<int>`).
   final Map<String, Map<String, Set<int>>> _enabledLevelsByClass =
       <String, Map<String, Set<int>>>{};
+  final Map<String, int> _courseGradeByClass = <String, int>{};
+  final Map<String, Set<String>> _disabledGamesByClass =
+      <String, Set<String>>{};
 
   /// Sesiones históricas para cálculo ponderado de precisión y actividad.
   final List<SessionRecord> _sessions = <SessionRecord>[];
@@ -196,7 +203,9 @@ class ExpeditionStateStore extends ChangeNotifier {
       'gran_reto',
     ];
 
-    for (final classId in const <String>['4.º A', '4.º B', '5.º A']) {
+    for (final schoolClass in CicloEscolar.defaultClasses) {
+      final classId = schoolClass.className;
+      _courseGradeByClass[classId] = schoolClass.gradeNumber;
       _enabledLevelsByClass[classId] = <String, Set<int>>{};
       for (final gameId in allGames) {
         // Por defecto en 4.º A: niveles 1 y 2 activos; en España en tus manos 1 y 2 activos, 3 opcional
@@ -207,6 +216,10 @@ class ExpeditionStateStore extends ChangeNotifier {
         }
       }
     }
+    _enabledLevelsByClass['4.º B'] = Map<String, Set<int>>.from(
+      _enabledLevelsByClass['4.º A']!,
+    );
+    _courseGradeByClass['4.º B'] = 4;
 
     _sessions.addAll(const <SessionRecord>[
       SessionRecord(
@@ -319,13 +332,14 @@ class ExpeditionStateStore extends ChangeNotifier {
     _customQuestions['q_default'] = const CustomQuestionData(
       questionId: 'q_default',
       classId: '4.º A',
-      gameId: 'rumbo_desconocido',
-      level: 2,
-      prompt: 'Si sales del campamento base y avanzas 3 casillas al Norte y 2 casillas al Este, ¿a qué refugio llegas?',
-      correctOption: 'Refugio del Pico Azul (Noreste)',
-      distractorA: 'Faro de la Costa Sur',
-      distractorB: 'Bosque del Oeste',
-      hint: 'Recuerda mirar la brújula: el Norte está arriba y el Este a la derecha.',
+      gameId: 'donde_estoy',
+      level: 1,
+      prompt: '¿Qué comunidad limita al Norte con el mar Cantábrico y al Oeste con Galicia?',
+      correctOption: 'Asturias',
+      distractorA: 'Aragón',
+      distractorB: 'Extremadura',
+      hint: 'Busca una comunidad pequeña en la costa norte, entre Galicia y Cantabria.',
+      targetRegionId: 'asturias',
       isPublished: true,
       updatedAtIso: 'Publicado en 4.º A',
     );
@@ -358,9 +372,11 @@ class ExpeditionStateStore extends ChangeNotifier {
   }
 
   void setRole(RoleEnum role, {String? classId, String? displayName}) {
+    final selectedClassId = classId ?? _currentUser.classId;
     _currentUser = _currentUser.copyWith(
       role: role,
-      classId: classId ?? _currentUser.classId,
+      classId: selectedClassId,
+      cicloEscolar: CicloEscolar.forClassId(selectedClassId),
       displayName:
           displayName ?? (role == RoleEnum.docente ? 'Prof. Marta' : 'Alex'),
     );
@@ -427,9 +443,69 @@ class ExpeditionStateStore extends ChangeNotifier {
   }
 
   Set<int> enabledLevelsForClassGame(String classId, String gameId) {
+    final normalizedClassId = _normalizeClassId(classId);
+    if (!isGameEnabledForClass(normalizedClassId, gameId)) {
+      return const <int>{};
+    }
     final classMap =
-        _enabledLevelsByClass[classId] ?? _enabledLevelsByClass['4.º A']!;
-    return Set<int>.unmodifiable(classMap[gameId] ?? const <int>{1, 2});
+        _enabledLevelsByClass[normalizedClassId] ??
+        _enabledLevelsByClass['4.º A']!;
+    final maximumLevel = maximumLevelForCourse(
+      courseGradeForClass(normalizedClassId),
+    );
+    return Set<int>.unmodifiable(
+      (classMap[gameId] ?? const <int>{1, 2}).where(
+        (level) => level <= maximumLevel,
+      ),
+    );
+  }
+
+  int courseGradeForClass(String classId) {
+    final normalizedClassId = _normalizeClassId(classId);
+    return _courseGradeByClass[normalizedClassId] ??
+        CicloEscolar.forClassId(normalizedClassId).gradeNumber;
+  }
+
+  void setCourseGradeForClass({required String classId, required int grade}) {
+    if (grade < 1 || grade > 6) {
+      throw ArgumentError.value(grade, 'grade', 'Debe estar entre 1 y 6.');
+    }
+    final normalizedClassId = _normalizeClassId(classId);
+    _courseGradeByClass[normalizedClassId] = grade;
+    notifyListeners();
+  }
+
+  static int maximumLevelForCourse(int grade) =>
+      CicloEscolar.maximumLevelForGrade(grade);
+
+  bool isGameEnabledForClass(String classId, String gameId) {
+    final normalizedClassId = _normalizeClassId(classId);
+    return !(_disabledGamesByClass[normalizedClassId]?.contains(gameId) ??
+        false);
+  }
+
+  void toggleGamePolicy({
+    required String classId,
+    required String gameId,
+    required bool enabled,
+  }) {
+    final normalizedClassId = _normalizeClassId(classId);
+    final disabledGames = _disabledGamesByClass.putIfAbsent(
+      normalizedClassId,
+      () => <String>{},
+    );
+    if (enabled) {
+      disabledGames.remove(gameId);
+      final classMap = _enabledLevelsByClass.putIfAbsent(
+        normalizedClassId,
+        () => <String, Set<int>>{},
+      );
+      final levels = classMap.putIfAbsent(gameId, () => <int>{});
+      if (levels.isEmpty) levels.add(1);
+    } else {
+      disabledGames.add(gameId);
+    }
+    notifyListeners();
   }
 
   void toggleLevelPolicy({
@@ -438,21 +514,31 @@ class ExpeditionStateStore extends ChangeNotifier {
     required int level,
     required bool enabled,
   }) {
+    final normalizedClassId = _normalizeClassId(classId);
+    if (level < 1 ||
+        level > maximumLevelForCourse(courseGradeForClass(normalizedClassId)) ||
+        !isGameEnabledForClass(normalizedClassId, gameId)) {
+      return;
+    }
     final classMap = _enabledLevelsByClass.putIfAbsent(
-      classId,
+      normalizedClassId,
       () => <String, Set<int>>{},
     );
     final currentSet = Set<int>.from(classMap[gameId] ?? <int>{1, 2});
     if (enabled) {
       currentSet.add(level);
     } else {
-      // El nivel 1 siempre permanece disponible como base pedagógica mínima
-      if (level != 1 || currentSet.length > 1) {
-        currentSet.remove(level);
-      }
+      currentSet.remove(level);
     }
     classMap[gameId] = currentSet;
     notifyListeners();
+  }
+
+  static String _normalizeClassId(String classId) {
+    final match = RegExp(r'^([1-6])(?:\.º?|\s)?\s*([AB])$')
+        .firstMatch(classId.trim());
+    if (match == null) return classId;
+    return '${match.group(1)}.º ${match.group(2)}';
   }
 
   /// Registra el resultado de una partida de forma idempotente por `sessionId`.

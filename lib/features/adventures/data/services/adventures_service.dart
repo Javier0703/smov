@@ -36,6 +36,7 @@ class AdventuresService {
     return AdventuresCatalogDefinitions.buildCatalog(
       completedByGame: completedMap,
       enabledByTeacher: enabledMap,
+      courseGrade: _store.courseGradeForClass(classId),
     );
   }
 }

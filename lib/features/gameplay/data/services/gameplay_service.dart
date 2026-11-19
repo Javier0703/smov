@@ -536,7 +536,11 @@ class GameplayService {
 
     // Si el docente ha publicado una pregunta personalizada para la clase, la añadimos
     final custom = _store.customQuestions['q_default'];
-    if (custom != null && custom.isPublished) {
+    if (custom != null &&
+        custom.isPublished &&
+        custom.gameId == 'donde_estoy' &&
+        custom.level == level &&
+        custom.classId == _store.currentUser.classId) {
       rounds.add(
         GameRoundChallenge(
           roundNumber: 3,
@@ -544,7 +548,7 @@ class GameplayService {
           title: 'Reto de tu docente · Clase ${custom.classId}',
           instruction: custom.prompt,
           hint: custom.hint,
-          targetRegionId: 'madrid',
+          targetRegionId: custom.targetRegionId,
           clues: <String>[
             'Pregunta adaptada especialmente para la clase ${custom.classId}.',
             'Pista de tu docente: ${custom.prompt}',
@@ -564,134 +568,144 @@ class GameplayService {
 
   List<GameRoundChallenge> _buildEspanaEnTusManosRounds(int level) {
     if (level == 2) {
-      // Nivel 2: Las 9 provincias de Castilla y León
-      return const <GameRoundChallenge>[
-        GameRoundChallenge(
+      final provinceRounds = SpainMapCatalog.castillaYLeonProvinces
+          .asMap()
+          .entries
+          .map((entry) {
+            final region = entry.value;
+            final borderHint = switch (region.id) {
+              'zamora' => 'Zamora limita con Portugal al oeste y está al noroeste de Salamanca.',
+              'salamanca' => 'Salamanca limita con Portugal al oeste, en el suroeste de Castilla y León.',
+              _ =>
+                'La capital de ${region.name} también se llama ${region.capital}.',
+            };
+            return GameRoundChallenge(
+              roundNumber: entry.key + 2,
+              mechanic: ChallengeMechanicType.spainTerritoryMap,
+              mapMode: SpainMapMode.castillaYLeonProvinces,
+              title:
+                  'Castilla y León · Provincia ${entry.key + 1} de ${SpainMapCatalog.castillaYLeonProvinces.length}',
+              instruction:
+                  'Arrastra el nombre ${region.name} hasta su provincia en el mapa.',
+              hint: borderHint,
+              targetRegionId: region.id,
+            );
+          })
+          .toList(growable: false);
+
+      return <GameRoundChallenge>[
+        const GameRoundChallenge(
           roundNumber: 1,
           mechanic: ChallengeMechanicType.spainTerritoryMap,
-          mapMode: SpainMapMode.castillaYLeonProvinces,
-          title: 'Castilla y León · Provincia 1 de 4',
-          instruction: 'Toca en el mapa de Castilla y León la provincia de VALLADOLID, situada en el centro de la comunidad.',
-          hint: 'Valladolid está en el corazón de Castilla y León, rodeada por León, Palencia, Burgos, Segovia, Ávila, Salamanca y Zamora.',
-          targetRegionId: 'valladolid',
+          mapMode: SpainMapMode.autonomousCommunities,
+          title: 'Pista de límites · Comunidad con Portugal',
+          instruction: 'Arrastra al mapa la comunidad autónoma que limita con Portugal al oeste.',
+          hint: 'Es Castilla y León, que comparte frontera con Portugal y contiene nueve provincias.',
+          targetRegionId: 'castilla_y_leon',
         ),
-        GameRoundChallenge(
-          roundNumber: 2,
-          mechanic: ChallengeMechanicType.spainTerritoryMap,
-          mapMode: SpainMapMode.castillaYLeonProvinces,
-          title: 'Castilla y León · Provincia 2 de 4',
-          instruction: 'Localiza y toca en el mapa la provincia de LEÓN, situada en el extremo Noroeste de Castilla y León.',
-          hint: 'León está arriba a la izquierda (Noroeste), limitando con Galicia y Asturias.',
-          targetRegionId: 'leon',
-        ),
-        GameRoundChallenge(
-          roundNumber: 3,
-          mechanic: ChallengeMechanicType.spainTerritoryMap,
-          mapMode: SpainMapMode.castillaYLeonProvinces,
-          title: 'Castilla y León · Provincia 3 de 4',
-          instruction: 'Ahora toca la provincia de SALAMANCA, en el Suroeste de Castilla y León.',
-          hint: 'Salamanca está abajo a la izquierda (Suroeste), debajo de Zamora.',
-          targetRegionId: 'salamanca',
-        ),
-        GameRoundChallenge(
-          roundNumber: 4,
-          mechanic: ChallengeMechanicType.spainTerritoryMap,
-          mapMode: SpainMapMode.castillaYLeonProvinces,
-          title: 'Castilla y León · Provincia 4 de 4',
-          instruction: 'Por último, localiza la provincia de BURGOS en el Noreste de nuestra comunidad.',
-          hint: 'Burgos está en la zona Norte-Este, entre Palencia y Soria.',
-          targetRegionId: 'burgos',
-        ),
-      ];
-    } else if (level == 3) {
-      // Nivel 3: Provincias de España
-      return const <GameRoundChallenge>[
-        GameRoundChallenge(
-          roundNumber: 1,
-          mechanic: ChallengeMechanicType.spainTerritoryMap,
-          mapMode: SpainMapMode.spainProvinces,
-          title: 'Provincias de España · Reto 1 de 3',
-          instruction: 'Localiza en el mapa provincial la provincia de ZARAGOZA, en el valle del Ebro.',
-          hint: 'Zaragoza está en el centro de Aragón (Noreste peninsular).',
-          targetRegionId: 'zaragoza',
-        ),
-        GameRoundChallenge(
-          roundNumber: 2,
-          mechanic: ChallengeMechanicType.spainTerritoryMap,
-          mapMode: SpainMapMode.spainProvinces,
-          title: 'Provincias de España · Reto 2 de 3',
-          instruction: 'Toca en el mapa la provincia de SEVILLA, en el valle del Guadalquivir (Andalucía).',
-          hint: 'Sevilla está en el Suroeste peninsular.',
-          targetRegionId: 'sevilla',
-        ),
-        GameRoundChallenge(
-          roundNumber: 3,
-          mechanic: ChallengeMechanicType.spainTerritoryMap,
-          mapMode: SpainMapMode.spainProvinces,
-          title: 'Provincias de España · Reto 3 de 3',
-          instruction: 'Localiza la provincia de A CORUÑA, en el extremo Noroeste de Galicia.',
-          hint: 'Busca la esquina superior izquierda de la península.',
-          targetRegionId: 'a_coruna',
-        ),
+        ...provinceRounds,
       ];
     }
 
-    // Nivel 1: Comunidades Autónomas
-    return const <GameRoundChallenge>[
-      GameRoundChallenge(
-        roundNumber: 1,
-        mechanic: ChallengeMechanicType.spainTerritoryMap,
-        mapMode: SpainMapMode.autonomousCommunities,
-        title: 'Comunidades Autónomas · 1 de 3',
-        instruction:
-            'Toca en el mapa de España nuestra comunidad: CASTILLA Y LEÓN.',
-        hint: 'Ocupa la gran submeseta norte en el interior noroccidental de la península.',
-        targetRegionId: 'castilla_y_leon',
-      ),
-      GameRoundChallenge(
-        roundNumber: 2,
-        mechanic: ChallengeMechanicType.spainTerritoryMap,
-        mapMode: SpainMapMode.autonomousCommunities,
-        title: 'Comunidades Autónomas · 2 de 3',
-        instruction: 'Localiza y toca en el sur peninsular la comunidad autónoma de ANDALUCÍA.',
-        hint: 'Andalucía se extiende por todo el Sur de la península ibérica.',
-        targetRegionId: 'andalucia',
-      ),
-      GameRoundChallenge(
-        roundNumber: 3,
-        mechanic: ChallengeMechanicType.spainTerritoryMap,
-        mapMode: SpainMapMode.autonomousCommunities,
-        title: 'Comunidades Autónomas · 3 de 3',
-        instruction: 'Localiza el archipiélago atlántico de las ISLAS CANARIAS para completar el mapa.',
-        hint: 'Las Islas Canarias están en el recuadro inferior izquierdo del mapa.',
-        targetRegionId: 'canarias',
-      ),
-    ];
+    if (level == 3) {
+      const uniprovincialIds = <String>{
+        'asturias_prov',
+        'cantabria_prov',
+        'illes_balears',
+        'la_rioja_prov',
+        'madrid_prov',
+        'murcia_prov',
+        'navarra_prov',
+      };
+      return SpainMapCatalog.spainProvinces
+          .asMap()
+          .entries
+          .map((entry) {
+            final region = entry.value;
+            final uniprovincialHint = uniprovincialIds.contains(region.id)
+                ? ' ${region.name} también es una comunidad uniprovincial.'
+                : '';
+            return GameRoundChallenge(
+              roundNumber: entry.key + 1,
+              mechanic: ChallengeMechanicType.spainTerritoryMap,
+              mapMode: SpainMapMode.spainProvinces,
+              title:
+                  'Provincias de España · ${entry.key + 1} de ${SpainMapCatalog.spainProvinces.length}',
+              instruction:
+                  'Arrastra ${region.name} a su lugar. Su capital es ${region.capital}.',
+              hint:
+                  'Orienta el mapa con el norte hacia arriba y busca ${region.name}.$uniprovincialHint',
+              targetRegionId: region.id,
+            );
+          })
+          .toList(growable: false);
+    }
+
+    return SpainMapCatalog.autonomousCommunities
+        .asMap()
+        .entries
+        .map((entry) {
+          final region = entry.value;
+          final isAutonomousCity =
+              region.id == 'ceuta' || region.id == 'melilla';
+          return GameRoundChallenge(
+            roundNumber: entry.key + 1,
+            mechanic: ChallengeMechanicType.spainTerritoryMap,
+            mapMode: SpainMapMode.autonomousCommunities,
+            title:
+                'Comunidades y ciudades autónomas · ${entry.key + 1} de ${SpainMapCatalog.autonomousCommunities.length}',
+            instruction: isAutonomousCity
+                ? 'Arrastra el nombre de ${region.name} hasta su lugar en el mapa.'
+                : 'Arrastra ${region.name} hasta su comunidad autónoma en el mapa.',
+            hint: 'La capital de ${region.name} es ${region.capital}.',
+            targetRegionId: region.id,
+          );
+        })
+        .toList(growable: false);
   }
 
   List<GameRoundChallenge> _buildViajePorEspanaRounds(int level) {
-    return const <GameRoundChallenge>[
-      GameRoundChallenge(
-        roundNumber: 1,
-        mechanic: ChallengeMechanicType.spainNeighborRoute,
-        mapMode: SpainMapMode.autonomousCommunities,
-        title: 'Itinerario 1 · De Galicia a la Comunidad de Madrid',
-        instruction: 'Estás en GALICIA. Toca comunidades autónomas limítrofes (vecinas) tramo a tramo hasta llegar a la COMUNIDAD DE MADRID.',
-        hint: 'Desde Galicia puedes pasar a Castilla y León, y desde Castilla y León entrar en Madrid.',
-        originRegionId: 'galicia',
-        targetRegionId: 'madrid',
-      ),
-      GameRoundChallenge(
-        roundNumber: 2,
-        mechanic: ChallengeMechanicType.spainNeighborRoute,
-        mapMode: SpainMapMode.autonomousCommunities,
-        title: 'Itinerario 2 · De Madrid hasta Andalucía',
-        instruction: 'Continúa tu expedición desde la COMUNIDAD DE MADRID hasta llegar a ANDALUCÍA tocando comunidades vecinas.',
-        hint: 'Pasa por Castilla-La Mancha (o Castilla y León -> Extremadura) hasta alcanzar Andalucía.',
-        originRegionId: 'madrid',
-        targetRegionId: 'andalucia',
-      ),
-    ];
+    final stages = switch (level) {
+      1 => const <(String, String)>[
+        ('castilla_y_leon', 'galicia'),
+        ('galicia', 'asturias'),
+      ],
+      2 => const <(String, String)>[
+        ('castilla_y_leon', 'galicia'),
+        ('galicia', 'asturias'),
+        ('asturias', 'madrid'),
+      ],
+      _ => const <(String, String)>[
+        ('castilla_y_leon', 'galicia'),
+        ('galicia', 'asturias'),
+        ('asturias', 'madrid'),
+        ('madrid', 'andalucia'),
+      ],
+    };
+    return stages.indexed
+        .map((entry) {
+          final (originId, targetId) = entry.$2;
+          final origin = SpainMapCatalog.findById(originId)!;
+          final target = SpainMapCatalog.findById(targetId)!;
+          final isFirstStage = entry.$1 == 0;
+          return GameRoundChallenge(
+            roundNumber: entry.$1 + 1,
+            mechanic: ChallengeMechanicType.spainNeighborRoute,
+            mapMode: SpainMapMode.autonomousCommunities,
+            title: isFirstStage
+                ? 'Etapa 1 · Desde Valladolid hasta Galicia'
+                : 'Etapa ${entry.$1 + 1} · ${origin.name} hasta ${target.name}',
+            instruction: isFirstStage
+                ? 'Comienzas en Valladolid, en Castilla y León. Viaja hasta Galicia tocando comunidades vecinas.'
+                : 'Desde ${origin.name}, viaja hasta ${target.name} sin saltarte ninguna frontera.',
+            hint: isFirstStage
+                ? 'Castilla y León limita con Galicia. Después, Asturias también limita con Castilla y León.'
+                : 'Toca solo una comunidad que comparta frontera con la última etapa.',
+            originRegionId: originId,
+            targetRegionId: targetId,
+          );
+        })
+        .toList(growable: false);
   }
 
   List<GameRoundChallenge> _buildGranRetoRounds(int level) {
@@ -716,19 +730,40 @@ class GameplayService {
       ),
       GameRoundChallenge(
         roundNumber: 3,
+        mechanic: ChallengeMechanicType.cartographyBuilder,
+        title: 'Prueba 3 de 7 · Interpreta la leyenda',
+        instruction: 'Según la leyenda del mapa, coloca el símbolo del parque en la casilla A4.',
+        hint: 'Busca el símbolo verde del parque en la leyenda y arrástralo a la primera fila, columna 4.',
+        startCoord: GridCoord(4, 0),
+        targetCoord: GridCoord(0, 3),
+        symbolLabel: 'Parque',
+      ),
+      GameRoundChallenge(
+        roundNumber: 4,
+        mechanic: ChallengeMechanicType.gridTimedPath,
+        title: 'Prueba 4 de 7 · Sigue el recorrido',
+        instruction: 'Sigue la ruta por casillas desde E1 hasta B5 y evita el obstáculo del bosque.',
+        hint: 'El norte está arriba; rodea el obstáculo antes de avanzar hacia el este.',
+        startCoord: GridCoord(4, 0),
+        targetCoord: GridCoord(1, 4),
+        obstacles: <GridCoord>[GridCoord(2, 1), GridCoord(3, 3)],
+      ),
+      GameRoundChallenge(
+        roundNumber: 5,
         mechanic: ChallengeMechanicType.gridCoordinateFind,
-        title: 'Prueba 3 de 7 · Coordenada Cartográfica',
-        instruction: 'Localiza en el plano topográfico el Refugio de Alta Montaña situado en la casilla A4.',
-        hint: 'Fila A (primera fila superior), columna 4.',
+        title: 'Prueba 5 de 7 · Encuentra el lugar',
+        instruction: 'Usa la leyenda para encontrar el refugio de montaña en la casilla A4.',
+        hint: 'A4 es la fila superior y la cuarta columna.',
         startCoord: GridCoord(4, 0),
         targetCoord: GridCoord(0, 3),
         symbolLabel: 'Refugio',
       ),
       GameRoundChallenge(
-        roundNumber: 4,
+        roundNumber: 6,
         mechanic: ChallengeMechanicType.whereAmIRiddle,
-        title: 'Prueba 4 de 7 · Detective de Fronteras',
-        instruction: '¿Qué comunidad autónoma tiene los Pirineos al Norte, Cataluña al Este y está atravesada por el río Ebro?',
+        title: 'Prueba 6 de 7 · Adivina la comunidad',
+        instruction:
+            'Resuelve las pistas para encontrar la Comunidad Autónoma.',
         hint: 'Su capital es Zaragoza.',
         targetRegionId: 'aragon',
         clues: <String>[
@@ -738,24 +773,6 @@ class GameplayService {
         ],
         options: <String>['Aragón', 'Región de Murcia', 'Galicia'],
         correctOptionIndex: 0,
-      ),
-      GameRoundChallenge(
-        roundNumber: 5,
-        mechanic: ChallengeMechanicType.spainTerritoryMap,
-        mapMode: SpainMapMode.autonomousCommunities,
-        title: 'Prueba 5 de 7 · Territorio Autonómico',
-        instruction: 'Toca en el mapa de España la COMUNIDAD VALENCIANA, en la costa del mar Mediterráneo.',
-        hint: 'Está en la costa Este, al sur de Cataluña y al este de Castilla-La Mancha.',
-        targetRegionId: 'valencia',
-      ),
-      GameRoundChallenge(
-        roundNumber: 6,
-        mechanic: ChallengeMechanicType.spainTerritoryMap,
-        mapMode: SpainMapMode.castillaYLeonProvinces,
-        title: 'Prueba 6 de 7 · Provincias de Castilla y León',
-        instruction: 'En el mapa de Castilla y León, toca la provincia de SEGOVIA, famosa por su Acueducto romano.',
-        hint: 'Segovia se encuentra en el sureste de Castilla y León, entre Ávila, Valladolid, Burgos y Soria.',
-        targetRegionId: 'segovia',
       ),
       GameRoundChallenge(
         roundNumber: 7,

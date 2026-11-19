@@ -6,6 +6,7 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../shared/services/expedition_state_store.dart';
+import '../../data/models/student_activity_model.dart';
 import '../../../../shared/widgets/cards/app_base_card.dart';
 import '../../../../shared/widgets/cards/info_tile.dart';
 import '../../../../shared/widgets/cards/status_badge.dart';
@@ -50,38 +51,29 @@ class StudentActivityScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: InfoTile(
-                        value: Formatters.percentage(
-                          activity.weightedAccuracyPercent,
+                _StudentActivityMetrics(activity: activity),
+                const SizedBox(height: AppSpacing.sm),
+                AppBaseCard(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  backgroundColor: AppColors.surfaceMuted,
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.psychology_alt_rounded,
+                        color: AppColors.brandPrimary,
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: Text(
+                          'Juego con mayor dificultad: ${activity.mostDifficultGameTitle}',
+                          style: AppTypography.bodyMedium.copyWith(
+                            color: AppColors.inkStrong,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
-                        label: 'Precisión ponderada',
-                        icon: Icons.track_changes_rounded,
-                        accentColor: AppColors.success,
                       ),
-                    ),
-                    const SizedBox(width: AppSpacing.xs),
-                    Expanded(
-                      child: InfoTile(
-                        value: '${activity.totalSessionsCount}',
-                        label: 'Misiones jugadas',
-                        icon: Icons.flag_rounded,
-                        accentColor: AppColors.brandPrimary,
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.xs),
-                    Expanded(
-                      child: InfoTile(
-                        value:
-                            '${activity.totalCorrectAnswers}/${activity.totalAttempts}',
-                        label: 'Aciertos totales',
-                        icon: Icons.check_circle_outline_rounded,
-                        accentColor: AppColors.brandAccent,
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.md),
                 CompetencyProgressCard(competencies: activity.competencies),
@@ -100,6 +92,60 @@ class StudentActivityScreen extends StatelessWidget {
               ],
             ),
           ),
+        );
+      },
+    );
+  }
+}
+
+class _StudentActivityMetrics extends StatelessWidget {
+  const _StudentActivityMetrics({required this.activity});
+
+  final StudentActivityModel activity;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final count = constraints.maxWidth >= 900
+            ? 4
+            : constraints.maxWidth >= 560
+            ? 3
+            : 2;
+        final width =
+            (constraints.maxWidth - AppSpacing.xs * (count - 1)) / count;
+        final items = <Widget>[
+          InfoTile(
+            value: Formatters.percentage(activity.weightedAccuracyPercent),
+            label: 'Precisión ponderada',
+            icon: Icons.track_changes_rounded,
+            accentColor: AppColors.success,
+          ),
+          InfoTile(
+            value: '${activity.totalSessionsCount}',
+            label: 'Retos completados',
+            icon: Icons.flag_rounded,
+            accentColor: AppColors.brandPrimary,
+          ),
+          InfoTile(
+            value: '${activity.totalCorrectAnswers}/${activity.totalAttempts}',
+            label: 'Aciertos totales',
+            icon: Icons.check_circle_outline_rounded,
+            accentColor: AppColors.brandAccent,
+          ),
+          InfoTile(
+            value: '${activity.totalCoinsEarned}',
+            label: 'Brújulas acumuladas',
+            icon: Icons.explore_rounded,
+            accentColor: AppColors.brandPrimary,
+          ),
+        ];
+        return Wrap(
+          spacing: AppSpacing.xs,
+          runSpacing: AppSpacing.xs,
+          children: [
+            for (final item in items) SizedBox(width: width, child: item),
+          ],
         );
       },
     );

@@ -364,7 +364,9 @@ class GameplayViewModel extends ChangeNotifier {
       if (region.id == round.targetRegionId) {
         _correctAnswers++;
         _completedRegionIds.add(region.id);
-        if (round.mapMode == SpainMapMode.autonomousCommunities) {
+        if (round.mapMode == SpainMapMode.autonomousCommunities &&
+            region.id != 'ceuta' &&
+            region.id != 'melilla') {
           _newlyStampedCommunities.add(region.id);
           _repository.registerCommunityStamp(region.id);
         }
@@ -403,8 +405,10 @@ class GameplayViewModel extends ChangeNotifier {
 
       _routeRegionIds.add(region.id);
       _completedRegionIds.add(region.id);
-      _newlyStampedCommunities.add(region.id);
-      _repository.registerCommunityStamp(region.id);
+      if (!_newlyStampedCommunities.contains(region.id)) {
+        _newlyStampedCommunities.add(region.id);
+        _repository.registerCommunityStamp(region.id);
+      }
 
       if (region.id == round.targetRegionId) {
         _totalAttempts++;
@@ -424,6 +428,31 @@ class GameplayViewModel extends ChangeNotifier {
 
     notifyListeners();
     return false;
+  }
+
+  /// Comprueba que la etiqueta arrastrada corresponde al territorio receptor.
+  Future<bool> handleSpainRegionDrop(
+    SpainMapRegion dragged,
+    SpainMapRegion target,
+  ) async {
+    final round = currentRound;
+    if (round == null ||
+        _activeGame?.id != 'espana_en_tus_manos' ||
+        round.mechanic != ChallengeMechanicType.spainTerritoryMap) {
+      return false;
+    }
+
+    _selectedRegionId = target.id;
+    if (dragged.id != target.id) {
+      _totalAttempts++;
+      _feedbackMessage =
+          'La pieza ${dragged.name} no corresponde a ${target.name}. Prueba otra vez.';
+      _isFeedbackPositive = false;
+      notifyListeners();
+      return false;
+    }
+
+    return handleSpainRegionTap(target);
   }
 
   /// Consume una ayuda de la mochila durante la partida (`Tu mochila en esta prueba`).

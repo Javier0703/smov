@@ -12,7 +12,7 @@ enum SpainMapMode {
   /// Nivel 2: Las 9 provincias de Castilla y León.
   castillaYLeonProvinces,
 
-  /// Nivel 3: Provincias de España (selección representativa nacional).
+  /// Nivel 3: Las 50 provincias de España.
   spainProvinces,
 }
 
@@ -379,105 +379,92 @@ abstract final class SpainMapCatalog {
     ),
   ];
 
-  /// Selección de provincias de España para el Nivel 3 de `España en tus manos`.
-  static const List<SpainMapRegion> spainProvinces = <SpainMapRegion>[
-    SpainMapRegion(
-      id: 'a_coruna',
-      name: 'A Coruña',
-      shortLabel: 'COR',
-      capital: 'A Coruña',
-      svgPath: 'M30 14L48 12L50 28L30 28Z',
-      labelCenter: Offset(40, 20),
-    ),
-    SpainMapRegion(
-      id: 'asturias_prov',
-      name: 'Asturias',
-      shortLabel: 'AST',
-      capital: 'Oviedo',
-      svgPath: 'M58 12L85 11L86 24L62 28Z',
-      labelCenter: Offset(72, 19),
-    ),
-    SpainMapRegion(
-      id: 'bizkaia',
-      name: 'Bizkaia',
-      shortLabel: 'BIZ',
-      capital: 'Bilbao',
-      svgPath: 'M103 13L118 14L117 26L104 25Z',
-      labelCenter: Offset(110, 19),
-    ),
-    SpainMapRegion(
-      id: 'zaragoza',
-      name: 'Zaragoza',
-      shortLabel: 'ZAR',
-      capital: 'Zaragoza',
-      svgPath: 'M140 28L168 30L168 52L140 52Z',
-      labelCenter: Offset(154, 40),
-    ),
-    SpainMapRegion(
-      id: 'barcelona',
-      name: 'Barcelona',
-      shortLabel: 'BCN',
-      capital: 'Barcelona',
-      svgPath: 'M178 24L204 26L196 52L176 50Z',
-      labelCenter: Offset(189, 38),
-    ),
-    SpainMapRegion(
-      id: 'valladolid_prov',
-      name: 'Valladolid',
-      shortLabel: 'VLL',
-      capital: 'Valladolid',
-      svgPath: 'M82 36L110 36L110 56L82 56Z',
-      labelCenter: Offset(96, 46),
-    ),
-    SpainMapRegion(
-      id: 'madrid_prov',
-      name: 'Madrid',
-      shortLabel: 'MAD',
-      capital: 'Madrid',
-      svgPath: 'M105 60L125 60L125 77L104 77Z',
-      labelCenter: Offset(115, 68),
-    ),
-    SpainMapRegion(
-      id: 'caceres',
-      name: 'Cáceres',
-      shortLabel: 'CÁC',
-      capital: 'Cáceres',
-      svgPath: 'M54 62L86 63L86 80L53 79Z',
-      labelCenter: Offset(70, 71),
-    ),
-    SpainMapRegion(
-      id: 'toledo',
-      name: 'Toledo',
-      shortLabel: 'TOL',
-      capital: 'Toledo',
-      svgPath: 'M88 77L124 77L124 94L88 94Z',
-      labelCenter: Offset(106, 85),
-    ),
-    SpainMapRegion(
-      id: 'valencia_prov',
-      name: 'Valencia',
-      shortLabel: 'VLC',
-      capital: 'Valencia',
-      svgPath: 'M158 64L184 64L178 90L156 88Z',
-      labelCenter: Offset(170, 77),
-    ),
-    SpainMapRegion(
-      id: 'sevilla',
-      name: 'Sevilla',
-      shortLabel: 'SEV',
-      capital: 'Sevilla',
-      svgPath: 'M62 98L96 98L96 120L62 120Z',
-      labelCenter: Offset(79, 109),
-    ),
-    SpainMapRegion(
-      id: 'granada',
-      name: 'Granada',
-      shortLabel: 'GRA',
-      capital: 'Granada',
-      svgPath: 'M112 102L144 104L140 123L110 122Z',
-      labelCenter: Offset(126, 113),
+  /// Las celdas representan las 50 provincias y mantienen la misma mecánica
+  /// vectorial de selección y arrastre que los otros modos del mapa.
+  static const List<(String, String, String, String, int, int)>
+  _spainProvinceGrid = <(String, String, String, String, int, int)>[
+    ('a_coruna', 'A Coruña', 'COR', 'A Coruña', 0, 0),
+    ('lugo', 'Lugo', 'LUG', 'Lugo', 0, 1),
+    ('asturias_prov', 'Asturias', 'AST', 'Oviedo', 0, 2),
+    ('cantabria_prov', 'Cantabria', 'CAN', 'Santander', 0, 3),
+    ('bizkaia', 'Bizkaia', 'BIZ', 'Bilbao', 0, 4),
+    ('gipuzkoa', 'Gipuzkoa', 'GIP', 'Donostia-San Sebastián', 0, 5),
+    ('navarra_prov', 'Navarra', 'NAV', 'Pamplona', 0, 6),
+    ('huesca', 'Huesca', 'HUE', 'Huesca', 0, 7),
+    ('lleida', 'Lleida', 'LLE', 'Lleida', 0, 8),
+    ('girona', 'Girona', 'GIR', 'Girona', 0, 9),
+    ('pontevedra', 'Pontevedra', 'PON', 'Pontevedra', 1, 0),
+    ('ourense', 'Ourense', 'OUR', 'Ourense', 1, 1),
+    ('leon_prov', 'León', 'LEO', 'León', 1, 2),
+    ('palencia_prov', 'Palencia', 'PAL', 'Palencia', 1, 3),
+    ('burgos_prov', 'Burgos', 'BUR', 'Burgos', 1, 4),
+    ('alava', 'Álava', 'ALA', 'Vitoria-Gasteiz', 1, 5),
+    ('la_rioja_prov', 'La Rioja', 'RIO', 'Logroño', 1, 6),
+    ('zaragoza', 'Zaragoza', 'ZAR', 'Zaragoza', 1, 7),
+    ('barcelona', 'Barcelona', 'BCN', 'Barcelona', 1, 8),
+    ('zamora', 'Zamora', 'ZAM', 'Zamora', 2, 0),
+    ('valladolid_prov', 'Valladolid', 'VLL', 'Valladolid', 2, 1),
+    ('soria_prov', 'Soria', 'SOR', 'Soria', 2, 2),
+    ('segovia_prov', 'Segovia', 'SEG', 'Segovia', 2, 3),
+    ('guadalajara', 'Guadalajara', 'GUA', 'Guadalajara', 2, 4),
+    ('teruel', 'Teruel', 'TER', 'Teruel', 2, 5),
+    ('tarragona', 'Tarragona', 'TAR', 'Tarragona', 2, 6),
+    ('illes_balears', 'Illes Balears', 'BAL', 'Palma', 2, 9),
+    ('salamanca_prov', 'Salamanca', 'SAL', 'Salamanca', 3, 0),
+    ('avila_prov', 'Ávila', 'AVI', 'Ávila', 3, 1),
+    ('madrid_prov', 'Madrid', 'MAD', 'Madrid', 3, 2),
+    ('caceres', 'Cáceres', 'CAC', 'Cáceres', 3, 3),
+    ('toledo', 'Toledo', 'TOL', 'Toledo', 3, 4),
+    ('cuenca', 'Cuenca', 'CUE', 'Cuenca', 3, 5),
+    ('castellon', 'Castellón', 'CAS', 'Castellón de la Plana', 3, 6),
+    ('valencia_prov', 'Valencia', 'VAL', 'Valencia', 3, 7),
+    ('badajoz', 'Badajoz', 'BAD', 'Badajoz', 4, 1),
+    ('ciudad_real', 'Ciudad Real', 'CR', 'Ciudad Real', 4, 2),
+    ('cordoba', 'Córdoba', 'COR', 'Córdoba', 4, 3),
+    ('jaen', 'Jaén', 'JAE', 'Jaén', 4, 4),
+    ('albacete', 'Albacete', 'ALB', 'Albacete', 4, 5),
+    ('alicante', 'Alicante', 'ALI', 'Alicante', 4, 6),
+    ('murcia_prov', 'Región de Murcia', 'MUR', 'Murcia', 4, 7),
+    ('granada', 'Granada', 'GRA', 'Granada', 4, 8),
+    ('huelva', 'Huelva', 'HUE', 'Huelva', 5, 1),
+    ('sevilla', 'Sevilla', 'SEV', 'Sevilla', 5, 2),
+    ('cadiz', 'Cádiz', 'CAD', 'Cádiz', 5, 3),
+    ('malaga', 'Málaga', 'MAL', 'Málaga', 5, 4),
+    ('almeria', 'Almería', 'ALM', 'Almería', 5, 5),
+    ('las_palmas', 'Las Palmas', 'LPA', 'Las Palmas de Gran Canaria', 5, 8),
+    (
+      'santa_cruz_tenerife',
+      'Santa Cruz de Tenerife',
+      'SCT',
+      'Santa Cruz de Tenerife',
+      5,
+      9,
     ),
   ];
+
+  static final List<SpainMapRegion> spainProvinces =
+      _buildSpainProvinceRegions();
+
+  static List<SpainMapRegion> _buildSpainProvinceRegions() {
+    return _spainProvinceGrid
+        .map((province) {
+          final left = 8.0 + province.$6 * 25.0;
+          final top = 7.0 + province.$5 * 21.0;
+          const width = 23.0;
+          const height = 18.0;
+          return SpainMapRegion(
+            id: province.$1,
+            name: province.$2,
+            shortLabel: province.$3,
+            capital: province.$4,
+            svgPath:
+                'M$left $top L${left + width} $top '
+                'L${left + width} ${top + height} L$left ${top + height} Z',
+            labelCenter: Offset(left + width / 2, top + height / 2),
+          );
+        })
+        .toList(growable: false);
+  }
 
   static List<SpainMapRegion> regionsForMode(SpainMapMode mode) {
     switch (mode) {
@@ -518,6 +505,7 @@ class SpainVectorMapWidget extends StatelessWidget {
     this.routeRegionIds = const <String>[],
     this.showLabels = true,
     this.onRegionTap,
+    this.onRegionDrop,
   });
 
   final SpainMapMode mode;
@@ -528,6 +516,8 @@ class SpainVectorMapWidget extends StatelessWidget {
   final List<String> routeRegionIds;
   final bool showLabels;
   final ValueChanged<SpainMapRegion>? onRegionTap;
+  final void Function(SpainMapRegion dragged, SpainMapRegion target)?
+  onRegionDrop;
 
   static const double _viewBoxWidth = 264.0;
   static const double _viewBoxHeight = 136.0;
@@ -545,56 +535,88 @@ class SpainVectorMapWidget extends StatelessWidget {
 
           return Semantics(
             label: 'Mapa interactivo de España',
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTapUp: onRegionTap == null
-                  ? null
-                  : (details) {
-                      final local = details.localPosition;
-                      final svgX = (local.dx / width) * _viewBoxWidth;
-                      final svgY = (local.dy / height) * _viewBoxHeight;
-                      final svgPoint = Offset(svgX, svgY);
-
-                      for (final region in regions.reversed) {
-                        final path = SvgPathParser.parse(region.svgPath);
-                        if (path.contains(svgPoint)) {
-                          onRegionTap!(region);
-                          return;
-                        }
-                      }
-                      // Fallback al centro más cercano si el toque estuvo en el borde
-                      SpainMapRegion? closest;
-                      var minDistance = 18.0;
-                      for (final region in regions) {
-                        final dist = (region.labelCenter - svgPoint).distance;
-                        if (dist < minDistance) {
-                          minDistance = dist;
-                          closest = region;
-                        }
-                      }
-                      if (closest != null) {
-                        onRegionTap!(closest);
-                      }
-                    },
-              child: CustomPaint(
-                size: Size(width, height),
-                painter: _SpainVectorMapPainter(
+            child: DragTarget<SpainMapRegion>(
+              onWillAcceptWithDetails: (_) => onRegionDrop != null,
+              onAcceptWithDetails: (details) {
+                final renderObject = context.findRenderObject();
+                if (renderObject is! RenderBox) return;
+                final localPosition = renderObject.globalToLocal(
+                  details.offset,
+                );
+                final target = _regionAtPosition(
+                  localPosition,
                   regions: regions,
-                  completedRegionIds: completedRegionIds,
-                  selectedRegionId: selectedRegionId,
-                  targetRegionId: targetRegionId,
-                  hintRegionIds: hintRegionIds,
-                  routeRegionIds: routeRegionIds,
-                  showLabels: showLabels,
-                  isCastillaYLeonZoom:
-                      mode == SpainMapMode.castillaYLeonProvinces,
-                ),
-              ),
+                  width: width,
+                  height: height,
+                );
+                if (target != null) {
+                  onRegionDrop?.call(details.data, target);
+                }
+              },
+              builder: (context, candidates, rejected) {
+                return GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTapUp: onRegionTap == null
+                      ? null
+                      : (details) {
+                          final region = _regionAtPosition(
+                            details.localPosition,
+                            regions: regions,
+                            width: width,
+                            height: height,
+                          );
+                          if (region != null) onRegionTap!(region);
+                        },
+                  child: CustomPaint(
+                    size: Size(width, height),
+                    painter: _SpainVectorMapPainter(
+                      regions: regions,
+                      completedRegionIds: completedRegionIds,
+                      selectedRegionId: selectedRegionId,
+                      targetRegionId: targetRegionId,
+                      hintRegionIds: hintRegionIds,
+                      routeRegionIds: routeRegionIds,
+                      showLabels: showLabels,
+                      isCastillaYLeonZoom:
+                          mode == SpainMapMode.castillaYLeonProvinces,
+                    ),
+                  ),
+                );
+              },
             ),
           );
         },
       ),
     );
+  }
+
+  SpainMapRegion? _regionAtPosition(
+    Offset position, {
+    required List<SpainMapRegion> regions,
+    required double width,
+    required double height,
+  }) {
+    final svgPoint = Offset(
+      (position.dx / width) * _viewBoxWidth,
+      (position.dy / height) * _viewBoxHeight,
+    );
+
+    for (final region in regions.reversed) {
+      if (SvgPathParser.parse(region.svgPath).contains(svgPoint)) {
+        return region;
+      }
+    }
+
+    SpainMapRegion? closest;
+    var minDistance = 18.0;
+    for (final region in regions) {
+      final distance = (region.labelCenter - svgPoint).distance;
+      if (distance < minDistance) {
+        minDistance = distance;
+        closest = region;
+      }
+    }
+    return closest;
   }
 }
 
@@ -677,7 +699,7 @@ class _SpainVectorMapPainter extends CustomPainter {
       double strokeWidth = 1.2;
 
       if (isCompleted) {
-        fillColor = AppColors.brandAccent.withValues(alpha: 0.55);
+        fillColor = AppColors.success;
         strokeColor = AppColors.brandPrimary;
       }
       if (isInRoute) {
@@ -693,9 +715,9 @@ class _SpainVectorMapPainter extends CustomPainter {
         strokeColor = AppColors.brandPrimary;
         strokeWidth = 2.0;
       }
-      if (isSelected) {
-        fillColor = AppColors.brandPrimary;
-        strokeColor = AppColors.inkStrong;
+      if (isSelected && !isCompleted) {
+        fillColor = AppColors.brandAccent;
+        strokeColor = AppColors.brandPrimary;
         strokeWidth = 2.2;
       }
 

@@ -1,5 +1,6 @@
 import '../../../../shared/models/role_enum.dart';
 import '../../../../shared/models/user_model.dart';
+import '../../../../shared/models/ciclo_escolar.dart';
 import '../../../../shared/services/expedition_state_store.dart';
 
 /// Servicio de acceso e identificación de rol escolar.
@@ -10,11 +11,9 @@ class AuthService {
 
   UserModel getCurrentUser() => _store.currentUser;
 
-  List<String> getAvailableClasses() => const <String>[
-    '4.º A',
-    '4.º B',
-    '5.º A',
-  ];
+  List<String> getAvailableClasses() => CicloEscolar.defaultClasses
+      .map((schoolClass) => schoolClass.className)
+      .toList(growable: false);
 
   Future<UserModel> signInWithRole({
     required RoleEnum role,

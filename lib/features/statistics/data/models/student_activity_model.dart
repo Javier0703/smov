@@ -22,6 +22,8 @@ class StudentActivityModel {
     required this.totalSessionsCount,
     required this.totalCorrectAnswers,
     required this.totalAttempts,
+    this.totalCoinsEarned = 0,
+    this.mostDifficultGameTitle = 'Sin datos suficientes',
     required this.competencies,
     required this.recentSessions,
   });
@@ -31,6 +33,8 @@ class StudentActivityModel {
   final int totalSessionsCount;
   final int totalCorrectAnswers;
   final int totalAttempts;
+  final int totalCoinsEarned;
+  final String mostDifficultGameTitle;
   final List<CompetencyStatBar> competencies;
   final List<SessionRecord> recentSessions;
 }

@@ -123,7 +123,7 @@ class _CelebrationHeroCard extends StatelessWidget {
         children: [
           StatusBadge(
             label: isFinal
-                ? 'DIPLOMA DE LA EXPEDICIÓN FINAL'
+                ? 'GRAN EXPLORADOR · DIPLOMA OFICIAL'
                 : 'PRUEBA SUPERADA CON ÉXITO',
             variant: StatusBadgeVariant.success,
             icon: Icons.verified_rounded,
@@ -143,12 +143,10 @@ class _CelebrationHeroCard extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
-            isFinal
-                ? AppStrings.grandExplorerTitle
-                : '¡${result.gameTitle} superado!',
+            isFinal ? 'GRAN EXPLORADOR' : '¡${result.gameTitle} superado!',
             textAlign: TextAlign.center,
             style: AppTypography.displayMedium.copyWith(
-              color: AppColors.brandPrimary,
+              color: isFinal ? AppColors.success : AppColors.brandPrimary,
             ),
           ),
           const SizedBox(height: AppSpacing.xs),

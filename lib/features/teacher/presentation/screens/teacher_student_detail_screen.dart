@@ -62,38 +62,7 @@ class TeacherStudentDetailScreen extends StatelessWidget {
                 const SizedBox(height: AppSpacing.md),
                 _StudentProfileHeroCard(student: student),
                 const SizedBox(height: AppSpacing.md),
-                Row(
-                  children: [
-                    Expanded(
-                      child: InfoTile(
-                        value: Formatters.percentage(
-                          student.weightedAccuracyPercent,
-                        ),
-                        label: 'Precisión ponderada',
-                        icon: Icons.track_changes_rounded,
-                        accentColor: AppColors.success,
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.xs),
-                    Expanded(
-                      child: InfoTile(
-                        value: '${student.medalsCount}/8',
-                        label: 'Medallas logradas',
-                        icon: Icons.emoji_events_rounded,
-                        accentColor: AppColors.brandPrimary,
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.xs),
-                    Expanded(
-                      child: InfoTile(
-                        value: '${student.stampedCommunitiesCount}/17',
-                        label: 'Sellos pasaporte',
-                        icon: Icons.verified_rounded,
-                        accentColor: AppColors.brandAccent,
-                      ),
-                    ),
-                  ],
-                ),
+                _StudentMetricsGrid(student: student),
                 const SizedBox(height: AppSpacing.md),
                 _PedagogicalDiagnosisCard(
                   student: student,
@@ -168,6 +137,66 @@ class _StudentProfileHeroCard extends StatelessWidget {
   }
 }
 
+class _StudentMetricsGrid extends StatelessWidget {
+  const _StudentMetricsGrid({required this.student});
+
+  final StudentRosterSummary student;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final count = constraints.maxWidth >= 900
+            ? 5
+            : constraints.maxWidth >= 560
+            ? 3
+            : 2;
+        final width =
+            (constraints.maxWidth - AppSpacing.xs * (count - 1)) / count;
+        final items = <Widget>[
+          InfoTile(
+            value: Formatters.percentage(student.weightedAccuracyPercent),
+            label: 'Acierto',
+            icon: Icons.track_changes_rounded,
+            accentColor: AppColors.success,
+          ),
+          InfoTile(
+            value: '${student.completedMissions}',
+            label: 'Retos completados',
+            icon: Icons.flag_rounded,
+            accentColor: AppColors.brandAccent,
+          ),
+          InfoTile(
+            value: '${student.totalCoinsEarned}',
+            label: 'Brújulas',
+            icon: Icons.explore_rounded,
+            accentColor: AppColors.brandPrimary,
+          ),
+          InfoTile(
+            value: '${student.medalsCount}/8',
+            label: 'Medallas',
+            icon: Icons.emoji_events_rounded,
+            accentColor: AppColors.brandPrimary,
+          ),
+          InfoTile(
+            value: '${student.stampedCommunitiesCount}/17',
+            label: 'Sellos',
+            icon: Icons.verified_rounded,
+            accentColor: AppColors.brandAccent,
+          ),
+        ];
+        return Wrap(
+          spacing: AppSpacing.xs,
+          runSpacing: AppSpacing.xs,
+          children: [
+            for (final item in items) SizedBox(width: width, child: item),
+          ],
+        );
+      },
+    );
+  }
+}
+
 class _PedagogicalDiagnosisCard extends StatelessWidget {
   const _PedagogicalDiagnosisCard({
     required this.student,
@@ -198,6 +227,26 @@ class _PedagogicalDiagnosisCard extends StatelessWidget {
                 Icons.trending_up_rounded,
                 color: AppColors.success,
                 size: 20,
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(
+                    Icons.psychology_alt_rounded,
+                    color: AppColors.brandPrimary,
+                    size: 20,
+                  ),
+                  const SizedBox(width: AppSpacing.xs),
+                  Expanded(
+                    child: Text(
+                      'Juego con mayor dificultad: ${student.mostDifficultGameTitle}',
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: AppColors.inkStrong,
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(width: AppSpacing.xs),
               Expanded(

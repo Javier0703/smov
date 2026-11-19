@@ -17,6 +17,7 @@ class TeacherViewModel extends ChangeNotifier {
   final Listenable? _externalStoreListenable;
 
   String _selectedClassId = '4.º A';
+  late int _selectedCourseGrade;
   ClassActivityDashboardModel? _classDashboard;
   StudentRosterSummary? _selectedStudent;
   List<GameLevelPolicyItem> _levelPolicies = const <GameLevelPolicyItem>[];
@@ -29,6 +30,7 @@ class TeacherViewModel extends ChangeNotifier {
   String? _statusFeedbackMessage;
 
   String get selectedClassId => _selectedClassId;
+  int get selectedCourseGrade => _selectedCourseGrade;
   ClassActivityDashboardModel? get classDashboard => _classDashboard;
   StudentRosterSummary? get selectedStudent => _selectedStudent;
   List<GameLevelPolicyItem> get levelPolicies => _levelPolicies;
@@ -41,6 +43,7 @@ class TeacherViewModel extends ChangeNotifier {
   String? get statusFeedbackMessage => _statusFeedbackMessage;
 
   void refreshAll() {
+    _selectedCourseGrade = _repository.loadCourseGrade(_selectedClassId);
     final activityRes = _repository.loadClassActivity(_selectedClassId);
     if (activityRes case Success<ClassActivityDashboardModel>(:final data)) {
       _classDashboard = data;
@@ -65,6 +68,12 @@ class TeacherViewModel extends ChangeNotifier {
 
   void selectClass(String classId) {
     _selectedClassId = classId == '4A' ? '4.º A' : classId;
+    refreshAll();
+  }
+
+  void selectCourseGrade(int grade) {
+    _repository.setCourseGrade(classId: _selectedClassId, grade: grade);
+    _selectedCourseGrade = grade;
     refreshAll();
   }
 
@@ -96,6 +105,18 @@ class TeacherViewModel extends ChangeNotifier {
     }
     _statusFeedbackMessage =
         'Recorrido de $_selectedClassId actualizado en tiempo real.';
+    notifyListeners();
+  }
+
+  void toggleGame({required String gameId, required bool enabled}) {
+    _repository.setGameEnabled(
+      classId: _selectedClassId,
+      gameId: gameId,
+      enabled: enabled,
+    );
+    refreshAll();
+    _statusFeedbackMessage =
+        'Juego ${enabled ? 'activado' : 'bloqueado'} para $_selectedClassId.';
     notifyListeners();
   }
 
@@ -135,6 +156,11 @@ class TeacherViewModel extends ChangeNotifier {
 
   void updateDraftHint(String value) {
     _questionDraft = _questionDraft.copyWith(hint: value);
+    notifyListeners();
+  }
+
+  void updateDraftTargetRegion(String regionId) {
+    _questionDraft = _questionDraft.copyWith(targetRegionId: regionId);
     notifyListeners();
   }
 

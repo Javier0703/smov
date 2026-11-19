@@ -49,11 +49,22 @@ class TeacherLevelsConfigScreen extends StatelessWidget {
                   onNavigateRoute: onNavigateRoute,
                 ),
                 const SizedBox(height: AppSpacing.md),
+                _CourseGradeSelector(
+                  grade: viewModel.selectedCourseGrade,
+                  onChanged: viewModel.selectCourseGrade,
+                ),
+                const SizedBox(height: AppSpacing.md),
                 _ClassPolicyHeaderBanner(classId: classId),
                 const SizedBox(height: AppSpacing.md),
                 for (final item in policies) ...[
                   _GameLevelPolicyCard(
                     item: item,
+                    onToggleGame: (enabled) {
+                      viewModel.toggleGame(
+                        gameId: item.gameId,
+                        enabled: enabled,
+                      );
+                    },
                     onToggleLevel: (levelNum, enabled) {
                       viewModel.toggleGameLevel(
                         gameId: item.gameId,
@@ -69,6 +80,59 @@ class TeacherLevelsConfigScreen extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _CourseGradeSelector extends StatelessWidget {
+  const _CourseGradeSelector({required this.grade, required this.onChanged});
+
+  final int grade;
+  final ValueChanged<int> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBaseCard(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      backgroundColor: AppColors.surfaceMuted,
+      child: Row(
+        children: [
+          const Icon(Icons.school_rounded, color: AppColors.brandPrimary),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Curso escolar',
+                  style: AppTypography.titleSmall.copyWith(
+                    color: AppColors.brandPrimary,
+                  ),
+                ),
+                Text(
+                  'Los niveles avanzados se bloquean según el curso.',
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.textMuted,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          DropdownButton<int>(
+            value: grade,
+            onChanged: (value) {
+              if (value != null) onChanged(value);
+            },
+            items: List<DropdownMenuItem<int>>.generate(
+              6,
+              (index) => DropdownMenuItem<int>(
+                value: index + 1,
+                child: Text('${index + 1}.º Primaria'),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -106,9 +170,14 @@ class _ClassPolicyHeaderBanner extends StatelessWidget {
 }
 
 class _GameLevelPolicyCard extends StatelessWidget {
-  const _GameLevelPolicyCard({required this.item, required this.onToggleLevel});
+  const _GameLevelPolicyCard({
+    required this.item,
+    required this.onToggleGame,
+    required this.onToggleLevel,
+  });
 
   final GameLevelPolicyItem item;
+  final ValueChanged<bool> onToggleGame;
   final void Function(int levelNumber, bool enabled) onToggleLevel;
 
   @override
@@ -120,39 +189,75 @@ class _GameLevelPolicyCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              StatusBadge(
-                label:
-                    '${item.orderNumber.toString().padLeft(2, '0')} · ${item.competencyTag}',
-                variant: StatusBadgeVariant.brand,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    StatusBadge(
+                      label:
+                          '${item.orderNumber.toString().padLeft(2, '0')} · ${item.competencyTag}',
+                      variant: StatusBadgeVariant.brand,
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      item.gameTitle,
+                      style: AppTypography.titleMedium.copyWith(
+                        color: AppColors.brandPrimary,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              const Spacer(),
-              StatusBadge(
-                label: '${item.enabledLevels.length}/3 niveles activos',
-                variant: StatusBadgeVariant.success,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    'Juego activo',
+                    style: AppTypography.labelSmall.copyWith(
+                      color: AppColors.textMuted,
+                    ),
+                  ),
+                  Switch(
+                    value: item.isGameEnabled,
+                    activeTrackColor: AppColors.brandAccent,
+                    activeThumbColor: AppColors.brandPrimary,
+                    onChanged: onToggleGame,
+                  ),
+                ],
               ),
             ],
           ),
           const SizedBox(height: AppSpacing.xs),
-          Text(
-            item.gameTitle,
-            style: AppTypography.titleMedium.copyWith(
-              color: AppColors.brandPrimary,
-            ),
+          StatusBadge(
+            label:
+                '${item.enabledLevels.length}/3 niveles activos${item.isGameEnabled ? '' : ' · juego bloqueado'}',
+            variant: item.isGameEnabled
+                ? StatusBadgeVariant.success
+                : StatusBadgeVariant.warning,
           ),
           const SizedBox(height: AppSpacing.xs),
           _LevelSwitchRow(
             label: item.level1Label,
+            levelNumber: 1,
             enabled: item.enabledLevels.contains(1),
+            isLocked: 1 > item.maximumAllowedLevel,
+            gameEnabled: item.isGameEnabled,
             onChanged: (val) => onToggleLevel(1, val),
           ),
           _LevelSwitchRow(
             label: item.level2Label,
+            levelNumber: 2,
             enabled: item.enabledLevels.contains(2),
+            isLocked: 2 > item.maximumAllowedLevel,
+            gameEnabled: item.isGameEnabled,
             onChanged: (val) => onToggleLevel(2, val),
           ),
           _LevelSwitchRow(
             label: item.level3Label,
+            levelNumber: 3,
             enabled: item.enabledLevels.contains(3),
+            isLocked: 3 > item.maximumAllowedLevel,
+            gameEnabled: item.isGameEnabled,
             onChanged: (val) => onToggleLevel(3, val),
           ),
         ],
@@ -164,16 +269,26 @@ class _GameLevelPolicyCard extends StatelessWidget {
 class _LevelSwitchRow extends StatelessWidget {
   const _LevelSwitchRow({
     required this.label,
+    required this.levelNumber,
     required this.enabled,
+    required this.isLocked,
+    required this.gameEnabled,
     required this.onChanged,
   });
 
   final String label;
+  final int levelNumber;
   final bool enabled;
+  final bool isLocked;
+  final bool gameEnabled;
   final ValueChanged<bool> onChanged;
 
   @override
   Widget build(BuildContext context) {
+    final canChange = !isLocked && gameEnabled;
+    final suffix = isLocked
+        ? ' · Disponible desde $levelNumber.º Primaria'
+        : '';
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
@@ -181,9 +296,9 @@ class _LevelSwitchRow extends StatelessWidget {
         children: [
           Expanded(
             child: Text(
-              label,
+              '$label$suffix',
               style: AppTypography.bodyMedium.copyWith(
-                color: enabled ? AppColors.inkStrong : AppColors.textMuted,
+                color: canChange ? AppColors.inkStrong : AppColors.textMuted,
               ),
             ),
           ),
@@ -191,7 +306,7 @@ class _LevelSwitchRow extends StatelessWidget {
             value: enabled,
             activeTrackColor: AppColors.brandAccent,
             activeThumbColor: AppColors.brandPrimary,
-            onChanged: onChanged,
+            onChanged: canChange ? onChanged : null,
           ),
         ],
       ),

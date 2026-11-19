@@ -233,7 +233,8 @@ class _GridChallengeWrapperBoard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (round.mechanic == ChallengeMechanicType.gridCoordinateFind &&
-            viewModel.activeLevelNumber == 3) ...[
+            (viewModel.activeLevelNumber == 3 ||
+                viewModel.activeGame?.id == 'gran_reto')) ...[
           Container(
             padding: const EdgeInsets.all(AppSpacing.sm),
             decoration: BoxDecoration(
@@ -468,6 +469,7 @@ class _SpainMapChallengeBoard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final regions = SpainMapCatalog.regionsForMode(round.mapMode);
+    final isTerritoryPuzzle = viewModel.activeGame?.id == 'espana_en_tus_manos';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -518,10 +520,21 @@ class _SpainMapChallengeBoard extends StatelessWidget {
             final finished = await viewModel.handleSpainRegionTap(region);
             onFinishedCheck(finished);
           },
+          onRegionDrop: isTerritoryPuzzle
+              ? (dragged, target) async {
+                  final finished = await viewModel.handleSpainRegionDrop(
+                    dragged,
+                    target,
+                  );
+                  onFinishedCheck(finished);
+                }
+              : null,
         ),
         const SizedBox(height: AppSpacing.sm),
         Text(
-          'También puedes tocar el territorio directamente en la lista:',
+          isTerritoryPuzzle
+              ? 'Arrastra cada nombre hasta su zona del mapa:'
+              : 'También puedes tocar el territorio directamente en la lista:',
           style: AppTypography.labelSmall.copyWith(color: AppColors.textMuted),
         ),
         const SizedBox(height: AppSpacing.xs),
@@ -530,17 +543,49 @@ class _SpainMapChallengeBoard extends StatelessWidget {
           runSpacing: 6,
           children: [
             for (final region in regions)
-              ActionChip(
-                label: Text(region.name),
-                backgroundColor:
-                    viewModel.completedRegionIds.contains(region.id)
-                    ? AppColors.brandAccent.withValues(alpha: 0.25)
-                    : AppColors.surfaceMuted,
-                onPressed: () async {
-                  final finished = await viewModel.handleSpainRegionTap(region);
-                  onFinishedCheck(finished);
-                },
-              ),
+              if (isTerritoryPuzzle)
+                Draggable<SpainMapRegion>(
+                  data: region,
+                  dragAnchorStrategy: pointerDragAnchorStrategy,
+                  feedback: Material(
+                    color: Colors.transparent,
+                    child: Chip(
+                      label: Text(region.name),
+                      backgroundColor: AppColors.brandAccent,
+                    ),
+                  ),
+                  childWhenDragging: Opacity(
+                    opacity: 0.35,
+                    child: Chip(label: Text(region.name)),
+                  ),
+                  child: ActionChip(
+                    label: Text(region.name),
+                    backgroundColor:
+                        viewModel.completedRegionIds.contains(region.id)
+                        ? AppColors.success.withValues(alpha: 0.22)
+                        : AppColors.surfaceMuted,
+                    onPressed: () async {
+                      final finished = await viewModel.handleSpainRegionTap(
+                        region,
+                      );
+                      onFinishedCheck(finished);
+                    },
+                  ),
+                )
+              else
+                ActionChip(
+                  label: Text(region.name),
+                  backgroundColor:
+                      viewModel.completedRegionIds.contains(region.id)
+                      ? AppColors.success.withValues(alpha: 0.22)
+                      : AppColors.surfaceMuted,
+                  onPressed: () async {
+                    final finished = await viewModel.handleSpainRegionTap(
+                      region,
+                    );
+                    onFinishedCheck(finished);
+                  },
+                ),
           ],
         ),
       ],

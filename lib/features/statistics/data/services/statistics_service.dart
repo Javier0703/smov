@@ -10,6 +10,12 @@ class StatisticsService {
   UserModel getCurrentUser() => _store.currentUser;
 
   List<SessionRecord> fetchStudentSessions(String studentId) {
-    return _store.sessions.where((s) => s.studentId == studentId).toList();
+    return _store.sessions
+        .where(
+          (session) =>
+              session.studentId == studentId &&
+              session.classId == _store.currentUser.classId,
+        )
+        .toList();
   }
 }

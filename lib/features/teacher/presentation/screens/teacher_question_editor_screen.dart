@@ -13,6 +13,7 @@ import '../../../../shared/widgets/inputs/app_dropdown_field.dart';
 import '../../../../shared/widgets/inputs/app_text_field.dart';
 import '../../../../shared/widgets/navigation/adventure_scaffold.dart';
 import '../../../../shared/widgets/navigation/app_top_bar.dart';
+import '../../../../shared/widgets/vector/spain_vector_map_widget.dart';
 import '../viewmodels/teacher_viewmodel.dart';
 import '../widgets/teacher_nav_tabs_bar.dart';
 
@@ -191,20 +192,12 @@ class _QuestionFormCard extends StatelessWidget {
               Expanded(
                 flex: 2,
                 child: AppDropdownField<String>(
-                  label: 'Aventura destino',
+                  label: 'Reto de pistas',
                   value: draft.gameId,
                   items: const <DropdownMenuItem<String>>[
                     DropdownMenuItem(
-                      value: 'rumbo_desconocido',
-                      child: Text('¡Rumbo desconocido!'),
-                    ),
-                    DropdownMenuItem(
                       value: 'donde_estoy',
                       child: Text('¿Dónde estoy?'),
-                    ),
-                    DropdownMenuItem(
-                      value: 'espana_en_tus_manos',
-                      child: Text('España en tus manos'),
                     ),
                   ],
                   onChanged: (v) {
@@ -269,9 +262,27 @@ class _QuestionFormCard extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.sm),
           AppTextField(
-            label: 'Pista pedagógica (visible al usar una Lupa de pistas)',
+            label: 'Pista personalizada para ¿Dónde estoy?',
             controller: hintController,
             onChanged: viewModel.updateDraftHint,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          AppDropdownField<String>(
+            label: 'Comunidad que debe localizar el alumno',
+            value: draft.targetRegionId,
+            items: SpainMapCatalog.autonomousCommunities
+                .map(
+                  (region) => DropdownMenuItem<String>(
+                    value: region.id,
+                    child: Text(region.name),
+                  ),
+                )
+                .toList(growable: false),
+            onChanged: (regionId) {
+              if (regionId != null) {
+                viewModel.updateDraftTargetRegion(regionId);
+              }
+            },
           ),
         ],
       ),

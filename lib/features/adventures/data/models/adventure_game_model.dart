@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../shared/models/ciclo_escolar.dart';
 
 /// Definición de un nivel dentro de una aventura geográfica.
 class AdventureLevelInfo {
@@ -13,6 +14,7 @@ class AdventureLevelInfo {
     required this.rewardCoins,
     required this.isCompleted,
     required this.isEnabledByTeacher,
+    required this.isAvailableForCourse,
     required this.isUnlockedByProgression,
   });
 
@@ -24,12 +26,15 @@ class AdventureLevelInfo {
   final int rewardCoins;
   final bool isCompleted;
   final bool isEnabledByTeacher;
+  final bool isAvailableForCourse;
   final bool isUnlockedByProgression;
 
-  bool get canPlay => isEnabledByTeacher && isUnlockedByProgression;
+  bool get canPlay =>
+      isEnabledByTeacher && isAvailableForCourse && isUnlockedByProgression;
 
   String get statusLabel {
     if (!isEnabledByTeacher) return 'No disponible para tu clase';
+    if (!isAvailableForCourse) return 'Disponible en cursos superiores';
     if (isCompleted) return 'Superado · Repetir práctica';
     if (isUnlockedByProgression) return 'Disponible';
     return 'Supera el nivel anterior';
@@ -77,6 +82,7 @@ abstract final class AdventuresCatalogDefinitions {
   static List<AdventureGameModel> buildCatalog({
     required Map<String, Set<int>> completedByGame,
     required Map<String, Set<int>> enabledByTeacher,
+    required int courseGrade,
   }) {
     List<AdventureLevelInfo> buildLevels(
       String gameId,
@@ -84,6 +90,7 @@ abstract final class AdventuresCatalogDefinitions {
     ) {
       final completed = completedByGame[gameId] ?? const <int>{};
       final enabled = enabledByTeacher[gameId] ?? const <int>{1, 2, 3};
+      final maximumCourseLevel = CicloEscolar.maximumLevelForGrade(courseGrade);
       final list = <AdventureLevelInfo>[];
 
       for (var i = 0; i < specs.length; i++) {
@@ -100,6 +107,7 @@ abstract final class AdventuresCatalogDefinitions {
             rewardCoins: spec.$4,
             isCompleted: completed.contains(levelNum),
             isEnabledByTeacher: enabled.contains(levelNum),
+            isAvailableForCourse: levelNum <= maximumCourseLevel,
             isUnlockedByProgression: prevCompleted || levelNum <= 2,
           ),
         );
@@ -375,9 +383,9 @@ abstract final class AdventuresCatalogDefinitions {
         shortDescription: 'Puzle interactivo del mapa de España: Comunidades Autónomas, Castilla y León y Provincias.',
         howToPlayObjective: 'Identifica y coloca cada territorio sobre el mapa vectorial de España o de Castilla y León según el nivel seleccionado.',
         howToPlaySteps: const <String>[
-          'En el Nivel 1 explorarás las 17 Comunidades Autónomas y las ciudades autónomas de Ceuta y Melilla.',
-          'En el Nivel 2 dominarás las 9 provincias de nuestra comunidad: Castilla y León.',
-          'En el Nivel 3 pondrás a prueba tu dominio de las provincias de toda España.',
+          'En 1.º de Primaria colocarás las Comunidades y Ciudades Autónomas.',
+          'En 2.º de Primaria localizarás las provincias de Castilla y León.',
+          'Desde 3.º de Primaria practicarás las 50 provincias, sus capitales y la orientación.',
         ],
         achievementTitle: 'Explorador de España',
         medalNumber: 8,
@@ -385,21 +393,21 @@ abstract final class AdventuresCatalogDefinitions {
         icon: Icons.map_rounded,
         levels: buildLevels('espana_en_tus_manos', const [
           (
-            'TERRITORIO AUTONÓMICO',
+            '1.º PRIMARIA · INICIAL',
             'Comunidades autónomas',
             'Sitúa las 17 comunidades autónomas y Ceuta y Melilla en el mapa de España.',
             40,
           ),
           (
-            'NUESTRA COMUNIDAD',
+            '2.º PRIMARIA · INTERMEDIO',
             'Castilla y León',
             'Localiza las 9 provincias de Castilla y León: León, Palencia, Burgos, Zamora, Valladolid, Soria, Salamanca, Ávila y Segovia.',
             40,
           ),
           (
-            'MAPA PROVINCIAL',
+            '3.º PRIMARIA EN ADELANTE · AVANZADO',
             'Provincias de España',
-            'Reto avanzado sobre las provincias de España (habilitable por el docente para la clase).',
+            'Localiza las 50 provincias, sus capitales y las comunidades uniprovinciales.',
             60,
           ),
         ]),

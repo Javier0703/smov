@@ -34,14 +34,15 @@ class WelcomeHeroCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            runSpacing: AppSpacing.xs,
             children: [
               const StatusBadge(
                 label: AppStrings.appBrandTag,
                 variant: StatusBadgeVariant.brand,
                 icon: Icons.explore_rounded,
               ),
-              const Spacer(),
               _ClassSelectorPill(
                 selectedClassId: selectedClassId,
                 availableClasses: availableClasses,

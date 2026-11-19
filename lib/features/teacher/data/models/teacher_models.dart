@@ -11,11 +11,13 @@ class StudentRosterSummary {
     required this.weightedAccuracyPercent,
     required this.totalCorrect,
     required this.totalAttempts,
+    this.totalCoinsEarned = 0,
     required this.completedMissions,
     required this.medalsCount,
     required this.stampedCommunitiesCount,
     required this.strengthTopic,
     required this.reinforcementTopic,
+    this.mostDifficultGameTitle = 'Sin datos suficientes',
     required this.sessions,
   });
 
@@ -26,11 +28,13 @@ class StudentRosterSummary {
   final int weightedAccuracyPercent;
   final int totalCorrect;
   final int totalAttempts;
+  final int totalCoinsEarned;
   final int completedMissions;
   final int medalsCount;
   final int stampedCommunitiesCount;
   final String strengthTopic;
   final String reinforcementTopic;
+  final String mostDifficultGameTitle;
   final List<SessionRecord> sessions;
 }
 
@@ -42,6 +46,9 @@ class ClassActivityDashboardModel {
     required this.totalClassCorrect,
     required this.totalClassAttempts,
     required this.activeStudentsCount,
+    this.completedChallengesCount = 0,
+    this.totalCoinsEarned = 0,
+    this.mostDifficultGameTitle = 'Sin datos suficientes',
     required this.averageRouteProgressPercent,
     required this.students,
   });
@@ -51,6 +58,9 @@ class ClassActivityDashboardModel {
   final int totalClassCorrect;
   final int totalClassAttempts;
   final int activeStudentsCount;
+  final int completedChallengesCount;
+  final int totalCoinsEarned;
+  final String mostDifficultGameTitle;
   final int averageRouteProgressPercent;
   final List<StudentRosterSummary> students;
 }
@@ -66,6 +76,8 @@ class GameLevelPolicyItem {
     required this.level2Label,
     required this.level3Label,
     required this.enabledLevels,
+    this.isGameEnabled = true,
+    this.maximumAllowedLevel = 3,
   });
 
   final String gameId;
@@ -76,4 +88,6 @@ class GameLevelPolicyItem {
   final String level2Label;
   final String level3Label;
   final Set<int> enabledLevels;
+  final bool isGameEnabled;
+  final int maximumAllowedLevel;
 }

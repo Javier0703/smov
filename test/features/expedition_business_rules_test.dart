@@ -1,7 +1,10 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smov/core/di/app_dependencies.dart';
+import 'package:smov/features/adventures/data/models/adventure_game_model.dart';
 import 'package:smov/features/gameplay/data/models/gameplay_models.dart';
 import 'package:smov/shared/models/user_model.dart';
+import 'package:smov/shared/widgets/vector/spain_vector_map_widget.dart';
 
 void main() {
   group('Reglas de Negocio y Contratos MVVM — Brújula Quest', () {
@@ -189,6 +192,189 @@ void main() {
         deps.adventuresViewModel.canStartGameLevel('espana_en_tus_manos', 3),
         isTrue,
       );
+    });
+
+    test('España en tus manos cubre todas las regiones y acepta etiquetas arrastradas', () async {
+      final game = deps.adventuresViewModel.findGame('espana_en_tus_manos')!;
+
+      deps.gameplayViewModel.startNewSession(game: game, levelNumber: 1);
+      expect(deps.gameplayViewModel.rounds, hasLength(19));
+      expect(
+        deps.gameplayViewModel.rounds
+            .map((round) => round.targetRegionId)
+            .toSet(),
+        hasLength(19),
+      );
+
+      final firstRound = deps.gameplayViewModel.currentRound!;
+      final correctRegion = SpainMapCatalog.findById(
+        firstRound.targetRegionId,
+      )!;
+      final wrongRegion = SpainMapCatalog.findById('asturias')!;
+      expect(
+        await deps.gameplayViewModel.handleSpainRegionDrop(
+          wrongRegion,
+          correctRegion,
+        ),
+        isFalse,
+      );
+      expect(
+        deps.gameplayViewModel.feedbackMessage,
+        contains('no corresponde'),
+      );
+      expect(
+        await deps.gameplayViewModel.handleSpainRegionDrop(
+          correctRegion,
+          correctRegion,
+        ),
+        isFalse,
+      );
+      expect(deps.gameplayViewModel.currentRoundIndex, 1);
+
+      deps.gameplayViewModel.startNewSession(game: game, levelNumber: 2);
+      expect(deps.gameplayViewModel.rounds, hasLength(10));
+      expect(
+        deps.gameplayViewModel.rounds.first.targetRegionId,
+        'castilla_y_leon',
+      );
+      expect(
+        deps.gameplayViewModel.rounds.where(
+          (round) => round.mapMode == SpainMapMode.castillaYLeonProvinces,
+        ),
+        hasLength(9),
+      );
+
+      deps.gameplayViewModel.startNewSession(game: game, levelNumber: 3);
+      expect(SpainMapCatalog.spainProvinces, hasLength(50));
+      expect(deps.gameplayViewModel.rounds, hasLength(50));
+      expect(
+        deps.gameplayViewModel.rounds
+            .map((round) => round.targetRegionId)
+            .toSet(),
+        hasLength(50),
+      );
+    });
+
+    test(
+      'Los juegos 9 y 10 siguen las etapas y las siete fases especificadas',
+      () async {
+        final travelGame = deps.adventuresViewModel.findGame(
+          'viaje_por_espana',
+        )!;
+        deps.gameplayViewModel.startNewSession(
+          game: travelGame,
+          levelNumber: 1,
+        );
+        expect(deps.gameplayViewModel.rounds, hasLength(2));
+        expect(
+          deps.gameplayViewModel.rounds.first.originRegionId,
+          'castilla_y_leon',
+        );
+        expect(deps.gameplayViewModel.rounds.first.targetRegionId, 'galicia');
+        expect(deps.gameplayViewModel.rounds[1].targetRegionId, 'asturias');
+
+        final finalGame = deps.adventuresViewModel.findGame('gran_reto')!;
+        deps.gameplayViewModel.startNewSession(game: finalGame, levelNumber: 1);
+        expect(
+          deps.gameplayViewModel.rounds.map((round) => round.mechanic).toList(),
+          <ChallengeMechanicType>[
+            ChallengeMechanicType.compassCalibration,
+            ChallengeMechanicType.gridNavigation,
+            ChallengeMechanicType.cartographyBuilder,
+            ChallengeMechanicType.gridTimedPath,
+            ChallengeMechanicType.gridCoordinateFind,
+            ChallengeMechanicType.whereAmIRiddle,
+            ChallengeMechanicType.spainNeighborRoute,
+          ],
+        );
+
+        final vm = deps.gameplayViewModel;
+        vm.setCompassDirection(vm.currentRound!.targetDirection);
+        await vm.submitCompassDirection();
+        await vm.handleGridCellTap(vm.currentRound!.targetCoord);
+        await vm.placeCartographySymbol('Parque', const GridCoord(0, 3));
+        await vm.handleGridCellTap(vm.currentRound!.targetCoord);
+        await vm.handleGridCellTap(vm.currentRound!.targetCoord);
+        await vm.handleSpainRegionTap(
+          SpainMapCatalog.findById(vm.currentRound!.targetRegionId)!,
+        );
+        await vm.handleSpainRegionTap(
+          SpainMapCatalog.findById('castilla_y_leon')!,
+        );
+        await vm.handleSpainRegionTap(SpainMapCatalog.findById('aragon')!);
+
+        expect(vm.lastResult?.isFinalExpedition, isTrue);
+        expect(deps.stateStore.unlockedMedalNumbers, contains(8));
+        expect(deps.stateStore.stampedCommunities, contains('castilla_y_leon'));
+      },
+    );
+
+    testWidgets('el nombre de una región se arrastra hasta el mapa', (
+      tester,
+    ) async {
+      final region = SpainMapCatalog.findById('galicia')!;
+      SpainMapRegion? droppedRegion;
+      const mapKey = ValueKey<String>('interactive-map');
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Column(
+              children: [
+                SizedBox(
+                  width: 264,
+                  child: SpainVectorMapWidget(
+                    key: mapKey,
+                    onRegionDrop: (dragged, target) {
+                      expect(dragged.id, 'galicia');
+                      droppedRegion = target;
+                    },
+                  ),
+                ),
+                Draggable<SpainMapRegion>(
+                  data: region,
+                  dragAnchorStrategy: pointerDragAnchorStrategy,
+                  feedback: const Material(child: Text('pieza en movimiento')),
+                  child: const Text('pieza para arrastrar'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      final mapBounds = tester.getRect(find.byKey(mapKey));
+      final dropPoint = Offset(
+        mapBounds.left + (45 / 264) * mapBounds.width,
+        mapBounds.top + (26 / 136) * mapBounds.height,
+      );
+      final startPoint = tester.getCenter(find.text('pieza para arrastrar'));
+      await tester.dragFrom(startPoint, dropPoint - startPoint);
+      await tester.pumpAndSettle();
+
+      expect(droppedRegion?.id, 'galicia');
+    });
+
+    test('España en tus manos limita niveles según el curso escolar', () {
+      AdventureGameModel gameForGrade(int grade) {
+        return AdventuresCatalogDefinitions.buildCatalog(
+          completedByGame: const <String, Set<int>>{},
+          enabledByTeacher: const <String, Set<int>>{
+            'espana_en_tus_manos': <int>{1, 2, 3},
+          },
+          courseGrade: grade,
+        ).firstWhere((game) => game.id == 'espana_en_tus_manos');
+      }
+
+      final firstGrade = gameForGrade(1);
+      expect(firstGrade.levels[0].canPlay, isTrue);
+      expect(firstGrade.levels[1].canPlay, isFalse);
+
+      final secondGrade = gameForGrade(2);
+      expect(secondGrade.levels[1].canPlay, isTrue);
+      expect(secondGrade.levels[2].canPlay, isFalse);
+
+      expect(gameForGrade(3).levels[2].isAvailableForCourse, isTrue);
     });
 
     test('2. Idempotencia de recompensas: cerrar la misma sesión dos veces no duplica las monedas', () async {

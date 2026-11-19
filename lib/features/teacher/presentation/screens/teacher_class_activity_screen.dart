@@ -58,6 +58,8 @@ class TeacherClassActivityScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.md),
                 _ClassKpiSummaryRow(dashboard: dashboard),
+                const SizedBox(height: AppSpacing.sm),
+                _ClassDifficultyHighlight(dashboard: dashboard),
                 const SizedBox(height: AppSpacing.md),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -101,37 +103,89 @@ class _ClassKpiSummaryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: InfoTile(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final count = constraints.maxWidth >= 900
+            ? 5
+            : constraints.maxWidth >= 560
+            ? 3
+            : 2;
+        final width =
+            (constraints.maxWidth - AppSpacing.xs * (count - 1)) / count;
+        final items = <Widget>[
+          InfoTile(
             value: Formatters.percentage(
               dashboard.weightedClassAccuracyPercent,
             ),
-            label: 'Precisión ponderada',
+            label: 'Acierto del grupo',
             icon: Icons.analytics_rounded,
             accentColor: AppColors.success,
           ),
-        ),
-        const SizedBox(width: AppSpacing.xs),
-        Expanded(
-          child: InfoTile(
+          InfoTile(
             value: '${dashboard.activeStudentsCount}',
             label: 'Alumnos activos',
             icon: Icons.groups_rounded,
             accentColor: AppColors.brandPrimary,
           ),
-        ),
-        const SizedBox(width: AppSpacing.xs),
-        Expanded(
-          child: InfoTile(
+          InfoTile(
+            value: '${dashboard.completedChallengesCount}',
+            label: 'Retos completados',
+            icon: Icons.flag_rounded,
+            accentColor: AppColors.brandAccent,
+          ),
+          InfoTile(
+            value: '${dashboard.totalCoinsEarned}',
+            label: 'Brújulas acumuladas',
+            icon: Icons.explore_rounded,
+            accentColor: AppColors.brandPrimary,
+          ),
+          InfoTile(
             value: Formatters.percentage(dashboard.averageRouteProgressPercent),
             label: 'Avance de ruta',
             icon: Icons.route_rounded,
             accentColor: AppColors.brandAccent,
           ),
-        ),
-      ],
+        ];
+        return Wrap(
+          spacing: AppSpacing.xs,
+          runSpacing: AppSpacing.xs,
+          children: [
+            for (final item in items) SizedBox(width: width, child: item),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _ClassDifficultyHighlight extends StatelessWidget {
+  const _ClassDifficultyHighlight({required this.dashboard});
+
+  final ClassActivityDashboardModel dashboard;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBaseCard(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      backgroundColor: AppColors.surfaceMuted,
+      child: Row(
+        children: [
+          const Icon(
+            Icons.psychology_alt_rounded,
+            color: AppColors.brandPrimary,
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              'Juego con mayor dificultad para el grupo: ${dashboard.mostDifficultGameTitle}',
+              style: AppTypography.bodyMedium.copyWith(
+                color: AppColors.inkStrong,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -196,7 +250,7 @@ class _StudentRosterRowCard extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                '${student.medalsCount}/8 medallas · ${student.stampedCommunitiesCount} sellos',
+                '${student.medalsCount}/8 medallas · ${student.stampedCommunitiesCount} sellos · ${student.totalCoinsEarned} brújulas',
                 style: AppTypography.labelSmall.copyWith(
                   color: AppColors.textMuted,
                 ),

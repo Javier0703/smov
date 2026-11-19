@@ -17,9 +17,12 @@ class TeacherRepository {
 
       var sumCorrect = 0;
       var sumAttempts = 0;
+      var totalCoinsEarned = 0;
+      final classSessions = students.expand((student) => student.sessions);
       for (final student in students) {
         sumCorrect += student.totalCorrect;
         sumAttempts += student.totalAttempts;
+        totalCoinsEarned += student.totalCoinsEarned;
       }
       final weightedClassPct = sumAttempts == 0
           ? 0
@@ -31,7 +34,17 @@ class TeacherRepository {
           weightedClassAccuracyPercent: weightedClassPct,
           totalClassCorrect: sumCorrect,
           totalClassAttempts: sumAttempts,
-          activeStudentsCount: students.length,
+          activeStudentsCount: students
+              .where((student) => student.sessions.isNotEmpty)
+              .length,
+          completedChallengesCount: students.fold<int>(
+            0,
+            (total, student) => total + student.completedMissions,
+          ),
+          totalCoinsEarned: totalCoinsEarned,
+          mostDifficultGameTitle: _mostDifficultGame(
+            classSessions.toList(growable: false),
+          ),
           averageRouteProgressPercent: 72,
           students: students,
         ),
@@ -101,6 +114,42 @@ class TeacherRepository {
           '03 · Altitud y leyenda',
         ),
         (
+          'llegar_a_tiempo',
+          4,
+          'Misión: llegar a tiempo',
+          'Recorridos',
+          '01 · Ruta directa',
+          '02 · Desvíos y puentes',
+          '03 · Rescate contrarreloj',
+        ),
+        (
+          'tesoro_secreto',
+          5,
+          'El tesoro secreto',
+          'Leyendas y pistas',
+          '01 · Pistas cardinales',
+          '02 · Símbolos de mapa',
+          '03 · Enigma del cartógrafo',
+        ),
+        (
+          'construye_mapa',
+          6,
+          'Construye el mapa',
+          'Cartografía',
+          '01 · Elementos físicos',
+          '02 · Plano comarcal',
+          '03 · Mapa histórico',
+        ),
+        (
+          'donde_estoy',
+          7,
+          '¿Dónde estoy?',
+          'Posición y límites',
+          '01 · Costa y fronteras',
+          '02 · Límites interiores',
+          '03 · Provincias y relieves',
+        ),
+        (
           'viaje_por_espana',
           9,
           'El viaje por España',
@@ -134,6 +183,10 @@ class TeacherRepository {
                 normalizedClass,
                 spec.$1,
               ),
+              isGameEnabled: _service.isGameEnabled(normalizedClass, spec.$1),
+              maximumAllowedLevel: ExpeditionStateStore.maximumLevelForCourse(
+                _service.getCourseGrade(normalizedClass),
+              ),
             ),
           )
           .toList();
@@ -161,6 +214,28 @@ class TeacherRepository {
     );
   }
 
+  int loadCourseGrade(String classId) =>
+      _service.getCourseGrade(classId == '4A' ? '4.º A' : classId);
+
+  void setCourseGrade({required String classId, required int grade}) {
+    _service.updateCourseGrade(
+      classId: classId == '4A' ? '4.º A' : classId,
+      grade: grade,
+    );
+  }
+
+  void setGameEnabled({
+    required String classId,
+    required String gameId,
+    required bool enabled,
+  }) {
+    _service.updateGamePolicy(
+      classId: classId == '4A' ? '4.º A' : classId,
+      gameId: gameId,
+      enabled: enabled,
+    );
+  }
+
   CustomQuestionData loadQuestionDraft(String questionId) =>
       _service.fetchQuestion(questionId);
 
@@ -173,5 +248,32 @@ class TeacherRepository {
         CacheFailure('No se pudo guardar la pregunta: $e'),
       );
     }
+  }
+
+  String _mostDifficultGame(List<SessionRecord> sessions) {
+    final grouped = <String, List<SessionRecord>>{};
+    for (final session in sessions) {
+      grouped.putIfAbsent(session.gameId, () => <SessionRecord>[]).add(session);
+    }
+    if (grouped.isEmpty) return 'Sin datos suficientes';
+
+    int accuracy(List<SessionRecord> gameSessions) {
+      final attempts = gameSessions.fold<int>(
+        0,
+        (sum, session) => sum + session.totalAttempts,
+      );
+      if (attempts == 0) return 100;
+      final correct = gameSessions.fold<int>(
+        0,
+        (sum, session) => sum + session.correctAnswers,
+      );
+      return (correct * 100 / attempts).round();
+    }
+
+    final hardest = grouped.entries.reduce(
+      (current, next) =>
+          accuracy(next.value) < accuracy(current.value) ? next : current,
+    );
+    return hardest.value.first.gameTitle;
   }
 }
