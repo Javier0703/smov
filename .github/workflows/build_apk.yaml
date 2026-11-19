@@ -31,7 +31,7 @@ jobs:
         run: flutter build apk --release
 
       - name: Subir APK como artefacto descargable
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: BrujulaQuest-Tablet-APK
           path: build/app/outputs/flutter-apk/app-release.apk
