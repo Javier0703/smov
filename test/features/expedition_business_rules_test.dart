@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:smov/core/di/app_dependencies.dart';
 import 'package:smov/features/adventures/data/models/adventure_game_model.dart';
 import 'package:smov/features/gameplay/data/models/gameplay_models.dart';
+import 'package:smov/features/gameplay/presentation/widgets/grid_expedition_board.dart';
 import 'package:smov/shared/models/user_model.dart';
 import 'package:smov/shared/widgets/vector/compass_rose_widget.dart';
 import 'package:smov/shared/widgets/vector/spain_vector_map_widget.dart';
@@ -57,6 +58,117 @@ void main() {
       deps.authViewModel.setExplorerName('  Luna  ');
       expect(await deps.authViewModel.enterAsStudent(), isTrue);
       expect(deps.stateStore.currentUser.displayName, 'Luna');
+    });
+
+    test('Encuentra el lugar muestra los hitos correctos sin revelar la casilla de referencia', () {
+      final game = deps.adventuresViewModel.findGame('encuentra_lugar')!;
+
+      deps.gameplayViewModel.startNewSession(game: game, levelNumber: 1);
+      final initialRound = deps.gameplayViewModel.rounds.first;
+      expect(
+        initialRound.landmarkAt(const GridCoord(1, 3)),
+        GridLandmark.bridge,
+      );
+      expect(initialRound.landmarkAt(const GridCoord(3, 3)), GridLandmark.park);
+
+      deps.gameplayViewModel.startNewSession(game: game, levelNumber: 2);
+      final intermediateRounds = deps.gameplayViewModel.rounds;
+      expect(
+        intermediateRounds.first.landmarkAt(const GridCoord(3, 3)),
+        GridLandmark.park,
+      );
+      expect(
+        intermediateRounds.first.landmarkAt(const GridCoord(4, 3)),
+        GridLandmark.forest,
+      );
+      expect(
+        intermediateRounds.last.landmarkAt(const GridCoord(2, 1)),
+        GridLandmark.school,
+      );
+      expect(
+        intermediateRounds.last.landmarkAt(const GridCoord(2, 0)),
+        GridLandmark.hospital,
+      );
+      expect(
+        intermediateRounds.every(
+          (round) => !round.instruction.contains(RegExp(r'\b(D4|C2)\b')),
+        ),
+        isTrue,
+      );
+
+      deps.gameplayViewModel.startNewSession(game: game, levelNumber: 3);
+      final advancedRounds = deps.gameplayViewModel.rounds;
+      expect(
+        advancedRounds.first.landmarkAt(const GridCoord(1, 1)),
+        GridLandmark.river,
+      );
+      expect(
+        advancedRounds.first.landmarkAt(const GridCoord(1, 3)),
+        GridLandmark.bridge,
+      );
+      expect(
+        advancedRounds.last.landmarkAt(const GridCoord(1, 3)),
+        GridLandmark.bridge,
+      );
+      expect(
+        advancedRounds.last.landmarkAt(const GridCoord(3, 3)),
+        GridLandmark.forest,
+      );
+      expect(
+        advancedRounds.every(
+          (round) =>
+              !round.instruction.contains(RegExp(r'\b[ABCDE][1-5]\b')) &&
+              !round.hint.contains(RegExp(r'\b[ABCDE][1-5]\b')),
+        ),
+        isTrue,
+      );
+
+      final finalChallengeGame = deps.adventuresViewModel.findGame(
+        'gran_reto',
+      )!;
+      deps.gameplayViewModel.startNewSession(
+        game: finalChallengeGame,
+        levelNumber: 1,
+      );
+      expect(
+        deps.gameplayViewModel.rounds[4].landmarkAt(const GridCoord(0, 3)),
+        GridLandmark.shelter,
+      );
+    });
+
+    testWidgets('el tablero conserva el icono del lugar de referencia', (
+      tester,
+    ) async {
+      final game = deps.adventuresViewModel.findGame('encuentra_lugar')!;
+      deps.gameplayViewModel.startNewSession(game: game, levelNumber: 3);
+      final round = deps.gameplayViewModel.rounds.last;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 400,
+                child: GridExpeditionBoard(
+                  round: round,
+                  explorerCoord: round.startCoord,
+                  visitedCoords: const <GridCoord>[],
+                  avatarConfig: deps.stateStore.currentUser.avatarConfig,
+                  showHintTarget: false,
+                  showCompassBoost: false,
+                  onCellTap: (_) {},
+                  onDirectionMove: (_) {},
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.byIcon(Icons.alt_route_rounded), findsWidgets);
+      expect(find.byIcon(Icons.forest_rounded), findsWidgets);
+      expect(find.text('Puente'), findsOneWidget);
+      expect(find.text('Bosque'), findsOneWidget);
     });
 
     test('Los tres niveles de Rumbo progresan de puntos cardinales a diagonales con obstáculos', () async {

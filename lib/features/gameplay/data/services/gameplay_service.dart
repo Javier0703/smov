@@ -224,6 +224,10 @@ class GameplayService {
           startCoord: GridCoord(4, 0),
           targetCoord: GridCoord(1, 3),
           symbolLabel: 'Puente',
+          landmarks: <GridLandmarkPlacement>[
+            GridLandmarkPlacement(GridCoord(1, 3), GridLandmark.bridge),
+            GridLandmarkPlacement(GridCoord(3, 3), GridLandmark.park),
+          ],
         ),
         GameRoundChallenge(
           roundNumber: 2,
@@ -234,6 +238,10 @@ class GameplayService {
           startCoord: GridCoord(1, 3),
           targetCoord: GridCoord(3, 3),
           symbolLabel: 'Parque',
+          landmarks: <GridLandmarkPlacement>[
+            GridLandmarkPlacement(GridCoord(1, 3), GridLandmark.bridge),
+            GridLandmarkPlacement(GridCoord(3, 3), GridLandmark.park),
+          ],
         ),
       ];
     }
@@ -244,22 +252,30 @@ class GameplayService {
           roundNumber: 1,
           mechanic: ChallengeMechanicType.gridCoordinateFind,
           title: 'Posición relativa · Al sur del parque',
-          instruction: '¿Qué hay al sur del parque (D4)? Toca el bosque en E4.',
+          instruction: '¿Qué hay al sur del parque? Toca el bosque en E4.',
           hint: 'Mira hacia abajo desde el parque: la primera casilla al Sur es el bosque.',
           startCoord: GridCoord(4, 0),
           targetCoord: GridCoord(4, 3),
           symbolLabel: 'Bosque',
+          landmarks: <GridLandmarkPlacement>[
+            GridLandmarkPlacement(GridCoord(3, 3), GridLandmark.park),
+            GridLandmarkPlacement(GridCoord(4, 3), GridLandmark.forest),
+          ],
         ),
         GameRoundChallenge(
           roundNumber: 2,
           mechanic: ChallengeMechanicType.gridCoordinateFind,
           title: 'Posición relativa · Al oeste del colegio',
           instruction:
-              '¿Qué lugar está al oeste del colegio (C2)? Toca el hospital.',
-          hint: 'El oeste está a la izquierda: desde C2 busca C1.',
+              '¿Qué lugar está al oeste del colegio? Toca el hospital.',
+          hint: 'El oeste está a la izquierda: busca la casilla anterior al colegio.',
           startCoord: GridCoord(3, 3),
           targetCoord: GridCoord(2, 0),
           symbolLabel: 'Hospital',
+          landmarks: <GridLandmarkPlacement>[
+            GridLandmarkPlacement(GridCoord(2, 0), GridLandmark.hospital),
+            GridLandmarkPlacement(GridCoord(2, 1), GridLandmark.school),
+          ],
         ),
       ];
     }
@@ -269,21 +285,29 @@ class GameplayService {
         roundNumber: 1,
         mechanic: ChallengeMechanicType.gridCoordinateFind,
         title: 'Leyenda y escala · El Puente',
-        instruction: 'Usa la leyenda: el símbolo de puente vale 1 tramo. Localiza el puente a 2 tramos al Este del río (B2).',
-        hint: 'Desde B2, avanza 2 casillas hacia el Este hasta B4.',
+        instruction: 'Usa la leyenda: el símbolo de puente vale 1 tramo. Localiza el puente a 2 tramos al Este del río.',
+        hint: 'Desde el río, avanza 2 casillas hacia el Este hasta el puente.',
         startCoord: GridCoord(4, 0),
         targetCoord: GridCoord(1, 3),
         symbolLabel: 'Puente',
+        landmarks: <GridLandmarkPlacement>[
+          GridLandmarkPlacement(GridCoord(1, 1), GridLandmark.river),
+          GridLandmarkPlacement(GridCoord(1, 3), GridLandmark.bridge),
+        ],
       ),
       GameRoundChallenge(
         roundNumber: 2,
         mechanic: ChallengeMechanicType.gridCoordinateFind,
         title: 'Leyenda y escala · Interpretación completa',
         instruction: 'La leyenda muestra pinos en verde. Toca el bosque situado a 2 casillas al Sur del puente.',
-        hint: 'En la escala sencilla, bajar 2 casillas desde B4 lleva a D4.',
+        hint: 'En la escala sencilla, baja 2 casillas desde el puente para llegar al bosque.',
         startCoord: GridCoord(1, 3),
         targetCoord: GridCoord(3, 3),
         symbolLabel: 'Bosque',
+        landmarks: <GridLandmarkPlacement>[
+          GridLandmarkPlacement(GridCoord(1, 3), GridLandmark.bridge),
+          GridLandmarkPlacement(GridCoord(3, 3), GridLandmark.forest),
+        ],
       ),
     ];
   }
@@ -758,6 +782,9 @@ class GameplayService {
         startCoord: GridCoord(4, 0),
         targetCoord: GridCoord(0, 3),
         symbolLabel: 'Refugio',
+        landmarks: <GridLandmarkPlacement>[
+          GridLandmarkPlacement(GridCoord(0, 3), GridLandmark.shelter),
+        ],
       ),
       GameRoundChallenge(
         roundNumber: 6,

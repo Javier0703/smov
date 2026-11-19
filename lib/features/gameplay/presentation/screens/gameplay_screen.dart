@@ -242,37 +242,15 @@ class _GridChallengeWrapperBoard extends StatelessWidget {
               borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
               border: Border.all(color: AppColors.borderDefault),
             ),
-            child: Wrap(
-              spacing: AppSpacing.md,
-              runSpacing: AppSpacing.xs,
-              alignment: WrapAlignment.center,
-              children: [
-                const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.park_rounded, color: AppColors.success),
-                    SizedBox(width: 6),
-                    Text('Leyenda: parque'),
-                  ],
-                ),
-                const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.commit_rounded, color: Color(0xFFD97706)),
-                    SizedBox(width: 6),
-                    Text('Puente'),
-                  ],
-                ),
-                Text(
-                  viewModel.activeLevelNumber == 3
-                      ? 'Escala: 1 tramo = 1 casilla'
-                      : 'Escala: usa filas y columnas',
-                  style: AppTypography.labelMedium.copyWith(
-                    color: AppColors.brandPrimary,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ],
+            alignment: Alignment.center,
+            child: Text(
+              viewModel.activeLevelNumber == 3
+                  ? 'Escala: 1 tramo = 1 casilla'
+                  : 'Escala: usa filas y columnas',
+              style: AppTypography.labelMedium.copyWith(
+                color: AppColors.brandPrimary,
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ),
           const SizedBox(height: AppSpacing.sm),

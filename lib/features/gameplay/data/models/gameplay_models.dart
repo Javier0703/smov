@@ -14,6 +14,29 @@ enum ChallengeMechanicType {
   spainNeighborRoute,
 }
 
+/// Hito cartográfico que puede aparecer en una casilla del tablero.
+enum GridLandmark {
+  river('Río'),
+  bridge('Puente'),
+  park('Parque'),
+  forest('Bosque'),
+  school('Colegio'),
+  hospital('Hospital'),
+  shelter('Refugio de montaña');
+
+  const GridLandmark(this.label);
+
+  final String label;
+}
+
+/// Hito concreto y su posición dentro de una ronda.
+class GridLandmarkPlacement {
+  const GridLandmarkPlacement(this.coord, this.landmark);
+
+  final GridCoord coord;
+  final GridLandmark landmark;
+}
+
 /// Posición entera `(row, col)` dentro de un tablero por casillas.
 class GridCoord {
   const GridCoord(this.row, this.col);
@@ -49,6 +72,7 @@ class GameRoundChallenge {
     this.correctOptionIndex = 0,
     this.clues = const <String>[],
     this.symbolLabel = 'Cumbre',
+    this.landmarks = const <GridLandmarkPlacement>[],
   });
 
   final int roundNumber;
@@ -68,6 +92,14 @@ class GameRoundChallenge {
   final int correctOptionIndex;
   final List<String> clues;
   final String symbolLabel;
+  final List<GridLandmarkPlacement> landmarks;
+
+  GridLandmark? landmarkAt(GridCoord coord) {
+    for (final placement in landmarks) {
+      if (placement.coord == coord) return placement.landmark;
+    }
+    return null;
+  }
 }
 
 /// Resultado consolidado de una sesión de juego al completarse.

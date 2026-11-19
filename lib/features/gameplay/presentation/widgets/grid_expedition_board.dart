@@ -120,6 +120,7 @@ class GridExpeditionBoard extends StatelessWidget {
                             showHintTarget &&
                             round.targetCoord.row == row &&
                             round.targetCoord.col == col,
+                        landmark: round.landmarkAt(GridCoord(row, col)),
                         avatarConfig: avatarConfig,
                         mechanic: round.mechanic,
                         onTap: allowCellTap
@@ -133,6 +134,16 @@ class GridExpeditionBoard extends StatelessWidget {
               ],
             ),
           ),
+        if (round.mechanic == ChallengeMechanicType.gridCoordinateFind &&
+            round.landmarks.isNotEmpty) ...[
+          const SizedBox(height: AppSpacing.xs),
+          _LandmarkLegend(
+            landmarks: round.landmarks
+                .map((placement) => placement.landmark)
+                .toSet()
+                .toList(),
+          ),
+        ],
         if (round.mechanic == ChallengeMechanicType.gridNavigation ||
             round.mechanic == ChallengeMechanicType.gridTimedPath ||
             showCompassBoost) ...[
@@ -153,6 +164,7 @@ class _GridCellItem extends StatelessWidget {
     required this.isObstacle,
     required this.isVisited,
     required this.isHintHighlighted,
+    required this.landmark,
     required this.avatarConfig,
     required this.mechanic,
     required this.onTap,
@@ -167,6 +179,7 @@ class _GridCellItem extends StatelessWidget {
   final bool isObstacle;
   final bool isVisited;
   final bool isHintHighlighted;
+  final GridLandmark? landmark;
   final AvatarConfig avatarConfig;
   final ChallengeMechanicType mechanic;
   final VoidCallback? onTap;
@@ -237,6 +250,8 @@ class _GridCellItem extends StatelessWidget {
                       color: AppColors.textMuted,
                       size: 24,
                     )
+                  else if (landmark != null)
+                    _GridLandmarkIcon(landmark: landmark!)
                   else if (isExplorerHere)
                     ExplorerAvatarWidget(
                       config: avatarConfig,
@@ -270,9 +285,7 @@ class _GridCellItem extends StatelessWidget {
                           textAlign: TextAlign.center,
                         ),
                       ],
-                    )
-                  else if (mechanic == ChallengeMechanicType.gridCoordinateFind)
-                    _LandmarkSeedIcon(coord: coord),
+                    ),
                 ],
               ),
             ),
@@ -283,31 +296,55 @@ class _GridCellItem extends StatelessWidget {
   }
 }
 
-class _LandmarkSeedIcon extends StatelessWidget {
-  const _LandmarkSeedIcon({required this.coord});
+class _GridLandmarkIcon extends StatelessWidget {
+  const _GridLandmarkIcon({required this.landmark});
 
-  final GridCoord coord;
+  final GridLandmark landmark;
 
   @override
   Widget build(BuildContext context) {
-    if (coord.row == 0 && coord.col == 0) {
-      return const Icon(
-        Icons.terrain_rounded,
-        size: 22,
-        color: AppColors.brandPrimary,
-      );
-    }
-    if (coord.row == 1 && coord.col == 3) {
-      return const Icon(
-        Icons.commit_rounded,
-        size: 22,
-        color: Color(0xFFD97706),
-      );
-    }
-    if (coord.row == 3 && coord.col == 3) {
-      return const Icon(Icons.park_rounded, size: 22, color: AppColors.success);
-    }
-    return const SizedBox.shrink();
+    final (icon, color) = switch (landmark) {
+      GridLandmark.river => (Icons.water_rounded, AppColors.brandSky),
+      GridLandmark.bridge => (Icons.alt_route_rounded, AppColors.warning),
+      GridLandmark.park => (Icons.park_rounded, AppColors.success),
+      GridLandmark.forest => (Icons.forest_rounded, AppColors.success),
+      GridLandmark.school => (Icons.school_rounded, AppColors.brandPrimary),
+      GridLandmark.hospital => (Icons.local_hospital_rounded, AppColors.danger),
+      GridLandmark.shelter => (Icons.cabin_rounded, AppColors.brandPrimary),
+    };
+    return Icon(icon, size: 22, color: color);
+  }
+}
+
+class _LandmarkLegend extends StatelessWidget {
+  const _LandmarkLegend({required this.landmarks});
+
+  final List<GridLandmark> landmarks;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: AppSpacing.md,
+      runSpacing: AppSpacing.xs,
+      alignment: WrapAlignment.center,
+      children: [
+        for (final landmark in landmarks)
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _GridLandmarkIcon(landmark: landmark),
+              const SizedBox(width: 4),
+              Text(
+                landmark.label,
+                style: AppTypography.labelSmall.copyWith(
+                  color: AppColors.brandPrimary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+      ],
+    );
   }
 }
 
