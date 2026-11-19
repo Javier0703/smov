@@ -30,3 +30,5 @@
   - Icono de ubicación con punto central marcado (evitar que parezca una gota de agua).
   - Emblemas e iconos coloridos e intuitivos (evitar formas abstractas como círculo con semicuadrado).
 - **SVGs Configurables**: Los mapas y medallas (en `assets/icons/` e `info/img/`) deben parametrizar colores dinámicamente y separar presentación (`presentation/`) de lógica (`data/`).
+## Terminal y SDK
+- El SDK de Flutter está en `/workspaces/flutter/bin/flutter` (y enlazado en `/usr/local/bin/flutter`). **NUNCA instales ni descargues Flutter, Java ni JDK.** Ejecuta directamente `flutter analyze` o `/workspaces/flutter/bin/flutter analyze`.
