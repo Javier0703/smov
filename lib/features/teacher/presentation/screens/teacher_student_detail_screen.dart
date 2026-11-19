@@ -220,64 +220,23 @@ class _PedagogicalDiagnosisCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Icon(
-                Icons.trending_up_rounded,
-                color: AppColors.success,
-                size: 20,
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(
-                    Icons.psychology_alt_rounded,
-                    color: AppColors.brandPrimary,
-                    size: 20,
-                  ),
-                  const SizedBox(width: AppSpacing.xs),
-                  Expanded(
-                    child: Text(
-                      'Juego con mayor dificultad: ${student.mostDifficultGameTitle}',
-                      style: AppTypography.bodyMedium.copyWith(
-                        color: AppColors.inkStrong,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(width: AppSpacing.xs),
-              Expanded(
-                child: Text(
-                  'Punto fuerte: ${student.strengthTopic}',
-                  style: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.inkStrong,
-                  ),
-                ),
-              ),
-            ],
+          _DiagnosisLine(
+            icon: Icons.psychology_alt_rounded,
+            color: AppColors.brandPrimary,
+            text:
+                'Juego con mayor dificultad: ${student.mostDifficultGameTitle}',
           ),
           const SizedBox(height: AppSpacing.xs),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Icon(
-                Icons.lightbulb_outline_rounded,
-                color: Color(0xFFD97706),
-                size: 20,
-              ),
-              const SizedBox(width: AppSpacing.xs),
-              Expanded(
-                child: Text(
-                  'Área recomendada de refuerzo: ${student.reinforcementTopic}',
-                  style: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.inkStrong,
-                  ),
-                ),
-              ),
-            ],
+          _DiagnosisLine(
+            icon: Icons.trending_up_rounded,
+            color: AppColors.success,
+            text: 'Punto fuerte: ${student.strengthTopic}',
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          _DiagnosisLine(
+            icon: Icons.lightbulb_outline_rounded,
+            color: const Color(0xFFD97706),
+            text: 'Área recomendada de refuerzo: ${student.reinforcementTopic}',
           ),
           const SizedBox(height: AppSpacing.md),
           AppPrimaryButton(
@@ -287,6 +246,37 @@ class _PedagogicalDiagnosisCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _DiagnosisLine extends StatelessWidget {
+  const _DiagnosisLine({
+    required this.icon,
+    required this.color,
+    required this.text,
+  });
+
+  final IconData icon;
+  final Color color;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, color: color, size: 20),
+        const SizedBox(width: AppSpacing.xs),
+        Expanded(
+          child: Text(
+            text,
+            style: AppTypography.bodyMedium.copyWith(
+              color: AppColors.inkStrong,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

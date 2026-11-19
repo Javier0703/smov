@@ -656,6 +656,72 @@ class _SpainVectorMapPainter extends CustomPainter {
   final double viewBoxHeight;
   final bool isCastillaYLeonZoom;
 
+  Path _roundedRegionPath(String svgPath) {
+    final path = Path();
+    final contours = RegExp(r'[Mm]([^Mm]*)').allMatches(svgPath);
+
+    for (final contour in contours) {
+      final coordinates = RegExp(r'-?\d+(?:\.\d+)?')
+          .allMatches(contour.group(1)!)
+          .map((match) => double.parse(match.group(0)!))
+          .toList(growable: false);
+      if (coordinates.length < 6) continue;
+
+      final points = <Offset>[
+        for (var index = 0; index + 1 < coordinates.length; index += 2)
+          Offset(coordinates[index], coordinates[index + 1]),
+      ];
+      if (points.length < 3) continue;
+
+      final beforeCorners = <Offset>[];
+      final afterCorners = <Offset>[];
+      for (var index = 0; index < points.length; index++) {
+        final previous = points[(index - 1 + points.length) % points.length];
+        final current = points[index];
+        final next = points[(index + 1) % points.length];
+        final incomingLength = (current - previous).distance;
+        final outgoingLength = (next - current).distance;
+        if (incomingLength == 0 || outgoingLength == 0) continue;
+
+        final cornerOffset =
+            1.6 < incomingLength * 0.3 && 1.6 < outgoingLength * 0.3
+            ? 1.6
+            : (incomingLength < outgoingLength
+                      ? incomingLength
+                      : outgoingLength) *
+                  0.3;
+        beforeCorners.add(
+          current + (previous - current) * (cornerOffset / incomingLength),
+        );
+        afterCorners.add(
+          current + (next - current) * (cornerOffset / outgoingLength),
+        );
+      }
+
+      if (beforeCorners.length != points.length) continue;
+      path.moveTo(afterCorners.first.dx, afterCorners.first.dy);
+      for (var index = 1; index < points.length; index++) {
+        path.lineTo(beforeCorners[index].dx, beforeCorners[index].dy);
+        path.quadraticBezierTo(
+          points[index].dx,
+          points[index].dy,
+          afterCorners[index].dx,
+          afterCorners[index].dy,
+        );
+      }
+      path.lineTo(beforeCorners.first.dx, beforeCorners.first.dy);
+      path.quadraticBezierTo(
+        points.first.dx,
+        points.first.dy,
+        afterCorners.first.dx,
+        afterCorners.first.dy,
+      );
+      path.close();
+    }
+
+    return path;
+  }
+
   @override
   void paint(Canvas canvas, Size size) {
     final scaleX = size.width / viewBoxWidth;
@@ -687,7 +753,7 @@ class _SpainVectorMapPainter extends CustomPainter {
 
     // Dibujar cada región
     for (final region in regions) {
-      final path = SvgPathParser.parse(region.svgPath);
+      final path = _roundedRegionPath(region.svgPath);
       final isCompleted = completedRegionIds.contains(region.id);
       final isSelected = selectedRegionId == region.id;
       final isTarget = targetRegionId == region.id;

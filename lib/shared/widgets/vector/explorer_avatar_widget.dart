@@ -78,7 +78,7 @@ class _ExplorerAvatarPainter extends CustomPainter {
     'M42 68C44 71.5 54 71.5 56 68',
   );
   static final Path _torsoPath = SvgPathParser.parse(
-    'M22 110C23.5 92 34 84 49 84C64 84 74.5 92 76 110H22Z',
+    'M18 110C20 91 32 82 49 82C66 82 78 91 80 110H18Z',
   );
   static final Path _scarfPath = SvgPathParser.parse(
     'M35 83H63L60 95L49 99L38 95L35 83Z',
@@ -389,6 +389,28 @@ class _ExplorerAvatarPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
     canvas.drawPath(_strapLeftPath, strapPaint);
     canvas.drawPath(_strapRightPath, strapPaint);
+
+    if (config.outfit == AvatarOutfit.schoolTracksuit) {
+      final tracksuitDetailPaint = Paint()
+        ..color = Colors.white
+        ..strokeWidth = 3.2
+        ..strokeCap = StrokeCap.round;
+      canvas.drawLine(
+        const Offset(32, 90),
+        const Offset(36, 108),
+        tracksuitDetailPaint,
+      );
+      canvas.drawLine(
+        const Offset(66, 90),
+        const Offset(62, 108),
+        tracksuitDetailPaint,
+      );
+      canvas.drawLine(
+        const Offset(49, 99),
+        const Offset(49, 109),
+        tracksuitDetailPaint..strokeWidth = 1.8,
+      );
+    }
 
     // Estrella dorada en la cinta del sombrero
     final badgePaint = Paint()

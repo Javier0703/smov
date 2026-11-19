@@ -4,6 +4,10 @@ import 'package:smov/app.dart';
 import 'package:smov/core/constants/app_strings.dart';
 import 'package:smov/core/di/app_dependencies.dart';
 import 'package:smov/core/router/app_router.dart';
+import 'package:smov/features/avatar/presentation/screens/avatar_editor_screen.dart';
+import 'package:smov/shared/models/user_model.dart';
+import 'package:smov/shared/widgets/vector/explorer_avatar_widget.dart';
+import 'package:smov/shared/widgets/vector/spain_vector_map_widget.dart';
 
 void main() {
   group(
@@ -160,6 +164,96 @@ void main() {
           );
         },
       );
+
+      testWidgets(
+        'La vista docente conserva sus textos en una pantalla estrecha',
+        (WidgetTester tester) async {
+          await tester.binding.setSurfaceSize(const Size(320, 568));
+          addTearDown(() => tester.binding.setSurfaceSize(null));
+
+          final dependencies = AppDependencies();
+          addTearDown(dependencies.dispose);
+
+          await tester.pumpWidget(
+            BrujulaQuestApp(
+              dependencies: dependencies,
+              initialRoute: AppRouter.teacherClassActivity('4A'),
+            ),
+          );
+          await tester.pumpAndSettle();
+
+          expect(tester.takeException(), isNull);
+          expect(find.text('Alex'), findsOneWidget);
+          await tester.ensureVisible(find.text('Alex'));
+          await tester.tap(find.text('Alex'));
+          await tester.pumpAndSettle();
+
+          final difficultyText = find.textContaining(
+            'Juego con mayor dificultad:',
+          );
+          expect(difficultyText, findsOneWidget);
+          expect(tester.getSize(difficultyText).width, greaterThan(100));
+          expect(tester.takeException(), isNull);
+        },
+      );
+
+      testWidgets(
+        'La vista previa del avatar permanece fija al personalizar el chándal',
+        (WidgetTester tester) async {
+          await tester.binding.setSurfaceSize(const Size(420, 820));
+          addTearDown(() => tester.binding.setSurfaceSize(null));
+
+          final dependencies = AppDependencies();
+          addTearDown(dependencies.dispose);
+
+          await tester.pumpWidget(
+            MaterialApp(
+              home: AvatarEditorScreen(
+                viewModel: dependencies.avatarViewModel,
+                onBackOrSaved: () {},
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+
+          final avatarFinder = find.byType(ExplorerAvatarWidget);
+          final previewTop = tester.getTopLeft(avatarFinder).dy;
+          await tester.ensureVisible(find.text('Chándal del colegio'));
+          await tester.tap(find.text('Chándal del colegio'));
+          await tester.pumpAndSettle();
+
+          expect(
+            tester.widget<ExplorerAvatarWidget>(avatarFinder).config.outfit,
+            AvatarOutfit.schoolTracksuit,
+          );
+          expect(tester.getTopLeft(avatarFinder).dy, previewTop);
+          expect(tester.takeException(), isNull);
+        },
+      );
+
+      testWidgets('El mapa vectorial de España se renderiza sin errores', (
+        WidgetTester tester,
+      ) async {
+        await tester.binding.setSurfaceSize(const Size(420, 420));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+
+        await tester.pumpWidget(
+          const MaterialApp(
+            home: Scaffold(
+              body: Center(
+                child: SizedBox(
+                  width: 350,
+                  child: SpainVectorMapWidget(showLabels: false),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.byType(SpainVectorMapWidget), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      });
     },
   );
 }

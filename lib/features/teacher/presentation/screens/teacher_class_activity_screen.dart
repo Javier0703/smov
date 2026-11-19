@@ -61,8 +61,10 @@ class TeacherClassActivityScreen extends StatelessWidget {
                 const SizedBox(height: AppSpacing.sm),
                 _ClassDifficultyHighlight(dashboard: dashboard),
                 const SizedBox(height: AppSpacing.md),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                Wrap(
+                  spacing: AppSpacing.xs,
+                  runSpacing: AppSpacing.xs,
+                  alignment: WrapAlignment.spaceBetween,
                   children: [
                     Text(
                       'Alumnado de ${dashboard.classId}',
@@ -198,72 +200,98 @@ class _StudentRosterRowCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppBaseCard(
-      onTap: onTap,
-      padding: const EdgeInsets.all(AppSpacing.md),
-      child: Row(
-        children: [
-          ExplorerAvatarWidget(
-            config: student.avatarConfig,
-            size: 52,
-            backgroundColor: AppColors.surfaceMuted,
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isCompact = constraints.maxWidth < 640;
+        final studentName = Text(
+          student.displayName,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: AppTypography.titleSmall.copyWith(color: AppColors.inkStrong),
+        );
+        final studentStrength = Text(
+          'Fortaleza: ${student.strengthTopic}',
+          maxLines: isCompact ? 2 : 1,
+          overflow: TextOverflow.ellipsis,
+          style: AppTypography.bodySmall.copyWith(color: AppColors.textMuted),
+        );
+        final accuracyBadge = StatusBadge(
+          label:
+              '${Formatters.percentage(student.weightedAccuracyPercent)} acierto',
+          variant: student.weightedAccuracyPercent >= 80
+              ? StatusBadgeVariant.success
+              : StatusBadgeVariant.warning,
+        );
+        final missionBadge = StatusBadge(
+          label: '${student.completedMissions} misiones',
+          variant: StatusBadgeVariant.neutral,
+        );
+        final progressBadge = StatusBadge(
+          label:
+              '${student.medalsCount}/8 medallas · ${student.stampedCommunitiesCount} sellos · ${student.totalCoinsEarned} brújulas',
+          variant: StatusBadgeVariant.brand,
+        );
+        final studentIdentity = Row(
+          children: [
+            ExplorerAvatarWidget(
+              config: student.avatarConfig,
+              size: 52,
+              backgroundColor: AppColors.surfaceMuted,
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [studentName, studentStrength],
+              ),
+            ),
+            if (isCompact)
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: AppColors.brandPrimary,
+              ),
+          ],
+        );
+
+        return AppBaseCard(
+          onTap: onTap,
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: isCompact
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(
-                      student.displayName,
-                      style: AppTypography.titleSmall.copyWith(
-                        color: AppColors.inkStrong,
-                      ),
+                    studentIdentity,
+                    const SizedBox(height: AppSpacing.sm),
+                    Wrap(
+                      spacing: AppSpacing.xs,
+                      runSpacing: AppSpacing.xs,
+                      children: [missionBadge, accuracyBadge, progressBadge],
+                    ),
+                  ],
+                )
+              : Row(
+                  children: [
+                    Expanded(child: studentIdentity),
+                    const SizedBox(width: AppSpacing.sm),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        accuracyBadge,
+                        const SizedBox(height: 4),
+                        missionBadge,
+                        const SizedBox(height: 4),
+                        progressBadge,
+                      ],
                     ),
                     const SizedBox(width: AppSpacing.xs),
-                    StatusBadge(
-                      label: '${student.completedMissions} misiones',
-                      variant: StatusBadgeVariant.neutral,
+                    const Icon(
+                      Icons.chevron_right_rounded,
+                      color: AppColors.brandPrimary,
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  'Fortaleza: ${student.strengthTopic}',
-                  style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.textMuted,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              StatusBadge(
-                label:
-                    '${Formatters.percentage(student.weightedAccuracyPercent)} acierto',
-                variant: student.weightedAccuracyPercent >= 80
-                    ? StatusBadgeVariant.success
-                    : StatusBadgeVariant.warning,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                '${student.medalsCount}/8 medallas · ${student.stampedCommunitiesCount} sellos · ${student.totalCoinsEarned} brújulas',
-                style: AppTypography.labelSmall.copyWith(
-                  color: AppColors.textMuted,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(width: AppSpacing.xs),
-          const Icon(
-            Icons.chevron_right_rounded,
-            color: AppColors.brandPrimary,
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

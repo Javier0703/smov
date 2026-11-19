@@ -55,7 +55,7 @@ class AvatarEditorScreen extends StatelessWidget {
               onBackOrSaved();
             },
           ),
-          body: SingleChildScrollView(
+          body: Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -75,193 +75,209 @@ class AvatarEditorScreen extends StatelessWidget {
                     ),
                   ),
                 ],
-                const SizedBox(height: AppSpacing.md),
-                AvatarOptionSelectorCard<AvatarPresentation>(
-                  title: 'Presentación',
-                  selectedValue: draft.presentation,
-                  onSelected: viewModel.setPresentation,
-                  options: const <AvatarChoiceItem<AvatarPresentation>>[
-                    AvatarChoiceItem(
-                      value: AvatarPresentation.boy,
-                      label: 'Niño',
-                      icon: Icons.boy_rounded,
-                    ),
-                    AvatarChoiceItem(
-                      value: AvatarPresentation.girl,
-                      label: 'Niña',
-                      icon: Icons.girl_rounded,
-                    ),
-                  ],
-                ),
                 const SizedBox(height: AppSpacing.sm),
-                AvatarOptionSelectorCard<AvatarHair>(
-                  title: 'Peinado',
-                  selectedValue: draft.hair,
-                  onSelected: viewModel.setHair,
-                  options: const <AvatarChoiceItem<AvatarHair>>[
-                    AvatarChoiceItem(
-                      value: AvatarHair.shortHair,
-                      label: 'Corto',
-                      swatchColor: Color(0xFF6B3E26),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        AvatarOptionSelectorCard<AvatarPresentation>(
+                          title: 'Presentación',
+                          selectedValue: draft.presentation,
+                          onSelected: viewModel.setPresentation,
+                          options: const <AvatarChoiceItem<AvatarPresentation>>[
+                            AvatarChoiceItem(
+                              value: AvatarPresentation.boy,
+                              label: 'Niño',
+                              icon: Icons.boy_rounded,
+                            ),
+                            AvatarChoiceItem(
+                              value: AvatarPresentation.girl,
+                              label: 'Niña',
+                              icon: Icons.girl_rounded,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        AvatarOptionSelectorCard<AvatarHair>(
+                          title: 'Peinado',
+                          selectedValue: draft.hair,
+                          onSelected: viewModel.setHair,
+                          options: const <AvatarChoiceItem<AvatarHair>>[
+                            AvatarChoiceItem(
+                              value: AvatarHair.shortHair,
+                              label: 'Corto',
+                              swatchColor: Color(0xFF6B3E26),
+                            ),
+                            AvatarChoiceItem(
+                              value: AvatarHair.longHair,
+                              label: 'Largo',
+                              swatchColor: Color(0xFF4A2816),
+                            ),
+                            AvatarChoiceItem(
+                              value: AvatarHair.curlyHair,
+                              label: 'Rizado',
+                              swatchColor: Color(0xFF2D1B12),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        AvatarOptionSelectorCard<AvatarSkinTone>(
+                          title: 'Tono de piel',
+                          selectedValue: draft.skinTone,
+                          onSelected: viewModel.setSkinTone,
+                          options: const <AvatarChoiceItem<AvatarSkinTone>>[
+                            AvatarChoiceItem(
+                              value: AvatarSkinTone.light,
+                              label: 'Claro',
+                              swatchColor: Color(0xFFF3C9A8),
+                            ),
+                            AvatarChoiceItem(
+                              value: AvatarSkinTone.medium,
+                              label: 'Medio',
+                              swatchColor: Color(0xFFE0A97E),
+                            ),
+                            AvatarChoiceItem(
+                              value: AvatarSkinTone.dark,
+                              label: 'Moreno',
+                              swatchColor: Color(0xFF9C6644),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        AvatarOptionSelectorCard<AvatarEyes>(
+                          title: 'Color de ojos',
+                          selectedValue: draft.eyes,
+                          onSelected: viewModel.setEyes,
+                          options: const <AvatarChoiceItem<AvatarEyes>>[
+                            AvatarChoiceItem(
+                              value: AvatarEyes.brown,
+                              label: 'Marrón',
+                              swatchColor: Color(0xFF101B54),
+                            ),
+                            AvatarChoiceItem(
+                              value: AvatarEyes.green,
+                              label: 'Verde',
+                              swatchColor: Color(0xFF1E7E48),
+                            ),
+                            AvatarChoiceItem(
+                              value: AvatarEyes.blue,
+                              label: 'Azul',
+                              swatchColor: Color(0xFF1D63B8),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        AvatarOptionSelectorCard<AvatarGlasses>(
+                          title: 'Gafas',
+                          selectedValue: draft.glasses,
+                          onSelected: viewModel.setGlasses,
+                          options: const <AvatarChoiceItem<AvatarGlasses>>[
+                            AvatarChoiceItem(
+                              value: AvatarGlasses.none,
+                              label: 'Sin gafas',
+                              icon: Icons.visibility_outlined,
+                            ),
+                            AvatarChoiceItem(
+                              value: AvatarGlasses.round,
+                              label: 'Gafas redondas',
+                              icon: Icons.remove_red_eye_rounded,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        AvatarOptionSelectorCard<AvatarOutfit>(
+                          title: 'Ropa de expedición',
+                          selectedValue: draft.outfit,
+                          onSelected: viewModel.setOutfit,
+                          options: <AvatarChoiceItem<AvatarOutfit>>[
+                            AvatarChoiceItem(
+                              value: AvatarOutfit.tshirt,
+                              label: 'Camiseta de manga corta',
+                              swatchColor: Color(0xFF29E1B4),
+                            ),
+                            AvatarChoiceItem(
+                              value: AvatarOutfit.redHoodie,
+                              label: 'Sudadera roja',
+                              swatchColor: Color(0xFFD64045),
+                            ),
+                            AvatarChoiceItem(
+                              value: AvatarOutfit.schoolTracksuit,
+                              label: 'Chándal del colegio',
+                              swatchColor: Color(0xFF17257C),
+                            ),
+                            if (viewModel.ownedCosmetics.contains(
+                              'explorer_jacket',
+                            ))
+                              const AvatarChoiceItem(
+                                value: AvatarOutfit.explorerJacket,
+                                label: 'Chaqueta exploradora',
+                                swatchColor: Color(0xFF19D88D),
+                              ),
+                          ],
+                        ),
+                        if (viewModel.ownedCosmetics.contains(
+                          'compass_badge',
+                        )) ...[
+                          const SizedBox(height: AppSpacing.sm),
+                          AvatarOptionSelectorCard<AvatarAccessory>(
+                            title: 'Accesorios',
+                            selectedValue: draft.accessory,
+                            onSelected: viewModel.setAccessory,
+                            options: const <AvatarChoiceItem<AvatarAccessory>>[
+                              AvatarChoiceItem(
+                                value: AvatarAccessory.none,
+                                label: 'Sin accesorio',
+                                icon: Icons.face_rounded,
+                              ),
+                              AvatarChoiceItem(
+                                value: AvatarAccessory.compassBadge,
+                                label: 'Insignia de brújula',
+                                icon: Icons.explore_rounded,
+                              ),
+                            ],
+                          ),
+                        ],
+                        if (viewModel.ownedCosmetics.contains(
+                          'golden_avatar',
+                        )) ...[
+                          const SizedBox(height: AppSpacing.sm),
+                          AvatarOptionSelectorCard<AvatarSpecialStyle>(
+                            title: 'Avatar especial',
+                            selectedValue: draft.specialStyle,
+                            onSelected: viewModel.setSpecialStyle,
+                            options:
+                                const <AvatarChoiceItem<AvatarSpecialStyle>>[
+                                  AvatarChoiceItem(
+                                    value: AvatarSpecialStyle.classic,
+                                    label: 'Explorador clásico',
+                                    icon: Icons.person_rounded,
+                                  ),
+                                  AvatarChoiceItem(
+                                    value: AvatarSpecialStyle.goldenExplorer,
+                                    label: 'Explorador dorado',
+                                    swatchColor: Color(0xFFF2B544),
+                                  ),
+                                ],
+                          ),
+                        ],
+                        const SizedBox(height: AppSpacing.lg),
+                        AppPrimaryButton(
+                          label: AppStrings.avatarSaveButton,
+                          icon: Icons.check_circle_rounded,
+                          isLoading: viewModel.isSaving,
+                          onPressed: viewModel.canSave
+                              ? () async {
+                                  final ok = await viewModel.saveChanges();
+                                  if (ok) {
+                                    onBackOrSaved();
+                                  }
+                                }
+                              : null,
+                        ),
+                      ],
                     ),
-                    AvatarChoiceItem(
-                      value: AvatarHair.longHair,
-                      label: 'Largo',
-                      swatchColor: Color(0xFF4A2816),
-                    ),
-                    AvatarChoiceItem(
-                      value: AvatarHair.curlyHair,
-                      label: 'Rizado',
-                      swatchColor: Color(0xFF2D1B12),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                AvatarOptionSelectorCard<AvatarSkinTone>(
-                  title: 'Tono de piel',
-                  selectedValue: draft.skinTone,
-                  onSelected: viewModel.setSkinTone,
-                  options: const <AvatarChoiceItem<AvatarSkinTone>>[
-                    AvatarChoiceItem(
-                      value: AvatarSkinTone.light,
-                      label: 'Claro',
-                      swatchColor: Color(0xFFF3C9A8),
-                    ),
-                    AvatarChoiceItem(
-                      value: AvatarSkinTone.medium,
-                      label: 'Medio',
-                      swatchColor: Color(0xFFE0A97E),
-                    ),
-                    AvatarChoiceItem(
-                      value: AvatarSkinTone.dark,
-                      label: 'Moreno',
-                      swatchColor: Color(0xFF9C6644),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                AvatarOptionSelectorCard<AvatarEyes>(
-                  title: 'Color de ojos',
-                  selectedValue: draft.eyes,
-                  onSelected: viewModel.setEyes,
-                  options: const <AvatarChoiceItem<AvatarEyes>>[
-                    AvatarChoiceItem(
-                      value: AvatarEyes.brown,
-                      label: 'Marrón',
-                      swatchColor: Color(0xFF101B54),
-                    ),
-                    AvatarChoiceItem(
-                      value: AvatarEyes.green,
-                      label: 'Verde',
-                      swatchColor: Color(0xFF1E7E48),
-                    ),
-                    AvatarChoiceItem(
-                      value: AvatarEyes.blue,
-                      label: 'Azul',
-                      swatchColor: Color(0xFF1D63B8),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                AvatarOptionSelectorCard<AvatarGlasses>(
-                  title: 'Gafas',
-                  selectedValue: draft.glasses,
-                  onSelected: viewModel.setGlasses,
-                  options: const <AvatarChoiceItem<AvatarGlasses>>[
-                    AvatarChoiceItem(
-                      value: AvatarGlasses.none,
-                      label: 'Sin gafas',
-                      icon: Icons.visibility_outlined,
-                    ),
-                    AvatarChoiceItem(
-                      value: AvatarGlasses.round,
-                      label: 'Gafas redondas',
-                      icon: Icons.remove_red_eye_rounded,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                AvatarOptionSelectorCard<AvatarOutfit>(
-                  title: 'Ropa de expedición',
-                  selectedValue: draft.outfit,
-                  onSelected: viewModel.setOutfit,
-                  options: <AvatarChoiceItem<AvatarOutfit>>[
-                    AvatarChoiceItem(
-                      value: AvatarOutfit.tshirt,
-                      label: 'Camiseta de manga corta',
-                      swatchColor: Color(0xFF29E1B4),
-                    ),
-                    AvatarChoiceItem(
-                      value: AvatarOutfit.redHoodie,
-                      label: 'Sudadera roja',
-                      swatchColor: Color(0xFFD64045),
-                    ),
-                    AvatarChoiceItem(
-                      value: AvatarOutfit.schoolTracksuit,
-                      label: 'Chándal del colegio',
-                      swatchColor: Color(0xFF17257C),
-                    ),
-                    if (viewModel.ownedCosmetics.contains('explorer_jacket'))
-                      const AvatarChoiceItem(
-                        value: AvatarOutfit.explorerJacket,
-                        label: 'Chaqueta exploradora',
-                        swatchColor: Color(0xFF19D88D),
-                      ),
-                  ],
-                ),
-                if (viewModel.ownedCosmetics.contains('compass_badge')) ...[
-                  const SizedBox(height: AppSpacing.sm),
-                  AvatarOptionSelectorCard<AvatarAccessory>(
-                    title: 'Accesorios',
-                    selectedValue: draft.accessory,
-                    onSelected: viewModel.setAccessory,
-                    options: const <AvatarChoiceItem<AvatarAccessory>>[
-                      AvatarChoiceItem(
-                        value: AvatarAccessory.none,
-                        label: 'Sin accesorio',
-                        icon: Icons.face_rounded,
-                      ),
-                      AvatarChoiceItem(
-                        value: AvatarAccessory.compassBadge,
-                        label: 'Insignia de brújula',
-                        icon: Icons.explore_rounded,
-                      ),
-                    ],
                   ),
-                ],
-                if (viewModel.ownedCosmetics.contains('golden_avatar')) ...[
-                  const SizedBox(height: AppSpacing.sm),
-                  AvatarOptionSelectorCard<AvatarSpecialStyle>(
-                    title: 'Avatar especial',
-                    selectedValue: draft.specialStyle,
-                    onSelected: viewModel.setSpecialStyle,
-                    options: const <AvatarChoiceItem<AvatarSpecialStyle>>[
-                      AvatarChoiceItem(
-                        value: AvatarSpecialStyle.classic,
-                        label: 'Explorador clásico',
-                        icon: Icons.person_rounded,
-                      ),
-                      AvatarChoiceItem(
-                        value: AvatarSpecialStyle.goldenExplorer,
-                        label: 'Explorador dorado',
-                        swatchColor: Color(0xFFF2B544),
-                      ),
-                    ],
-                  ),
-                ],
-                const SizedBox(height: AppSpacing.lg),
-                AppPrimaryButton(
-                  label: AppStrings.avatarSaveButton,
-                  icon: Icons.check_circle_rounded,
-                  isLoading: viewModel.isSaving,
-                  onPressed: viewModel.canSave
-                      ? () async {
-                          final ok = await viewModel.saveChanges();
-                          if (ok) {
-                            onBackOrSaved();
-                          }
-                        }
-                      : null,
                 ),
               ],
             ),

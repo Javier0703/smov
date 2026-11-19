@@ -131,10 +131,13 @@ class _AvatarChoiceChipButton<T> extends StatelessWidget {
                   ),
                   const SizedBox(width: AppSpacing.xs),
                 ],
-                Text(
-                  option.label,
-                  style: AppTypography.labelMedium.copyWith(
-                    color: isSelected ? Colors.white : AppColors.inkStrong,
+                Flexible(
+                  child: Text(
+                    option.label,
+                    softWrap: true,
+                    style: AppTypography.labelMedium.copyWith(
+                      color: isSelected ? Colors.white : AppColors.inkStrong,
+                    ),
                   ),
                 ),
               ],
