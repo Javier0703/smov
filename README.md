@@ -1,17 +1,23 @@
-# smov
+# Brújula Quest · Sociales
 
-Proyecto de GeoExplorer
+Aplicación educativa Flutter de GeoExplorer.
 
-## Getting Started
+## Compilaciones iOS
 
-This project is a starting point for a Flutter application.
+El workflow **Compilar iOS** se ejecuta al actualizar `main`/`master` o desde
+GitHub Actions. Siempre publica `BrujulaQuest-iOS-Simulator.zip`, que contiene
+la app para el simulador de iOS.
 
-A few resources to get you started if this is your first Flutter project:
+Para generar una IPA instalable en dispositivos, configura estos secretos del
+repositorio en **Settings → Secrets and variables → Actions**:
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+- `IOS_CERTIFICATE_BASE64`: certificado de distribución Apple `.p12` codificado
+  en Base64, incluyendo su clave privada.
+- `IOS_CERTIFICATE_PASSWORD`: contraseña del archivo `.p12`.
+- `IOS_PROVISIONING_PROFILE_BASE64`: perfil Ad Hoc para el Bundle ID
+  `es.uva.smov.smov`, codificado en Base64. Incluye los dispositivos registrados
+  en los que se instalará la app.
+- `IOS_TEAM_ID`: identificador del equipo de Apple Developer.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Con los cuatro secretos configurados, el workflow también publica
+`BrujulaQuest-iOS-IPA`. Sin ellos, solo se compila la versión de simulador.

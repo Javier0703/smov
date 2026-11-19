@@ -1,0 +1,187 @@
+name: Compilar iOS
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+
+    steps:
+      - name: Descargar código del repositorio
+        uses: actions/checkout@v5
+
+      - name: Configurar Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Instalar dependencias
+        run: flutter pub get
+
+      - name: Compilar app para el simulador iOS
+        run: flutter build ios --release --simulator
+
+      - name: Empaquetar app de simulador
+        run: |
+          mkdir -p build/ios/artifacts
+          ditto -c -k --sequesterRsrc --keepParent \
+            build/ios/iphonesimulator/Runner.app \
+            build/ios/artifacts/BrujulaQuest-iOS-Simulator.zip
+
+      - name: Publicar app de simulador
+        uses: actions/upload-artifact@v6
+        with:
+          name: BrujulaQuest-iOS-Simulator
+          path: build/ios/artifacts/BrujulaQuest-iOS-Simulator.zip
+          if-no-files-found: error
+
+      - name: Comprobar configuración de firma
+        id: signing
+        env:
+          IOS_CERTIFICATE_BASE64: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
+          IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+          IOS_TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
+        run: |
+          configured=0
+          for value in \
+            "$IOS_CERTIFICATE_BASE64" \
+            "$IOS_CERTIFICATE_PASSWORD" \
+            "$IOS_PROVISIONING_PROFILE_BASE64" \
+            "$IOS_TEAM_ID"; do
+            if [ -n "$value" ]; then
+              configured=$((configured + 1))
+            fi
+          done
+
+          if [ "$configured" -eq 0 ]; then
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "No hay credenciales de firma; se publicará solo la app de simulador."
+          elif [ "$configured" -ne 4 ]; then
+            echo "::error::Configura todos los secretos de firma iOS o elimínalos para compilar solo el simulador."
+            exit 1
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Instalar certificado y perfil de firma
+        if: steps.signing.outputs.enabled == 'true'
+        env:
+          IOS_CERTIFICATE_BASE64: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
+          IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+        run: |
+          certificate_path="$RUNNER_TEMP/ios-distribution.p12"
+          profile_path="$RUNNER_TEMP/ios-profile.mobileprovision"
+          profile_plist="$RUNNER_TEMP/ios-profile.plist"
+          keychain_path="$RUNNER_TEMP/ios-build.keychain-db"
+          keychain_password="$(openssl rand -hex 24)"
+          profile_directory="$HOME/Library/MobileDevice/Provisioning Profiles"
+
+          python3 - <<'PY'
+          import base64
+          import os
+
+          files = {
+              "IOS_CERTIFICATE_BASE64": os.path.join(os.environ["RUNNER_TEMP"], "ios-distribution.p12"),
+              "IOS_PROVISIONING_PROFILE_BASE64": os.path.join(os.environ["RUNNER_TEMP"], "ios-profile.mobileprovision"),
+          }
+          for variable, path in files.items():
+              with open(path, "wb") as file:
+                  file.write(base64.b64decode(os.environ[variable]))
+          PY
+
+          security create-keychain -p "$keychain_password" "$keychain_path"
+          security set-keychain-settings -lut 21600 "$keychain_path"
+          security unlock-keychain -p "$keychain_password" "$keychain_path"
+          security import "$certificate_path" \
+            -P "$IOS_CERTIFICATE_PASSWORD" \
+            -A \
+            -k "$keychain_path"
+          security set-key-partition-list \
+            -S apple-tool:,apple: \
+            -s \
+            -k "$keychain_password" \
+            "$keychain_path"
+          security list-keychains -d user -s \
+            "$keychain_path" \
+            "$HOME/Library/Keychains/login.keychain-db"
+          security default-keychain -d user -s "$keychain_path"
+
+          mkdir -p "$profile_directory"
+          security cms -D -i "$profile_path" > "$profile_plist"
+          profile_uuid=$(/usr/libexec/PlistBuddy -c 'Print :UUID' "$profile_plist")
+          profile_name=$(/usr/libexec/PlistBuddy -c 'Print :Name' "$profile_plist")
+          cp "$profile_path" "$profile_directory/$profile_uuid.mobileprovision"
+          echo "IOS_PROFILE_UUID=$profile_uuid" >> "$GITHUB_ENV"
+          echo "IOS_PROFILE_NAME=$profile_name" >> "$GITHUB_ENV"
+
+      - name: Preparar opciones de exportación IPA
+        if: steps.signing.outputs.enabled == 'true'
+        env:
+          IOS_TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
+        run: |
+          cat >> ios/Flutter/Release.xcconfig <<EOF
+          DEVELOPMENT_TEAM = $IOS_TEAM_ID
+          CODE_SIGN_STYLE = Manual
+          CODE_SIGN_IDENTITY = Apple Distribution
+          PROVISIONING_PROFILE_SPECIFIER = $IOS_PROFILE_NAME
+          EOF
+
+          python3 - <<'PY'
+          import os
+          import plistlib
+
+          export_options = {
+              "method": "ad-hoc",
+              "signingStyle": "manual",
+              "teamID": os.environ["IOS_TEAM_ID"],
+              "provisioningProfiles": {
+                  "es.uva.smov.smov": os.environ["IOS_PROFILE_NAME"],
+              },
+          }
+          with open(os.path.join(os.environ["RUNNER_TEMP"], "ExportOptions.plist"), "wb") as file:
+              plistlib.dump(export_options, file)
+          PY
+
+      - name: Compilar IPA firmada
+        if: steps.signing.outputs.enabled == 'true'
+        run: |
+          flutter build ipa \
+            --release \
+            --build-number "$GITHUB_RUN_NUMBER" \
+            --export-options-plist "$RUNNER_TEMP/ExportOptions.plist"
+
+      - name: Publicar IPA
+        if: steps.signing.outputs.enabled == 'true'
+        uses: actions/upload-artifact@v6
+        with:
+          name: BrujulaQuest-iOS-IPA
+          path: build/ios/ipa/*.ipa
+          if-no-files-found: error
+
+      - name: Indicar requisitos de firma
+        if: steps.signing.outputs.enabled != 'true'
+        run: |
+          {
+            echo "### IPA para dispositivo"
+            echo "No se creó una IPA instalable porque faltan las credenciales de firma de Apple."
+            echo "Configura los secretos IOS_CERTIFICATE_BASE64, IOS_CERTIFICATE_PASSWORD,"
+            echo "IOS_PROVISIONING_PROFILE_BASE64 e IOS_TEAM_ID para habilitarla."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Limpiar credenciales temporales
+        if: always() && steps.signing.outputs.enabled == 'true'
+        run: |
+          security delete-keychain "$RUNNER_TEMP/ios-build.keychain-db" || true
+          rm -f \
+            "$RUNNER_TEMP/ios-distribution.p12" \
+            "$RUNNER_TEMP/ios-profile.mobileprovision" \
+            "$RUNNER_TEMP/ios-profile.plist" \
+            "$HOME/Library/MobileDevice/Provisioning Profiles/$IOS_PROFILE_UUID.mobileprovision"
