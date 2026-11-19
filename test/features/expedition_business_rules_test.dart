@@ -315,6 +315,23 @@ void main() {
       deps.gameplayViewModel.startNewSession(game: treasure, levelNumber: 1);
       expect(deps.gameplayViewModel.rounds.first.clues, hasLength(2));
 
+      deps.gameplayViewModel.startNewSession(game: treasure, levelNumber: 2);
+      final treasureRound = deps.gameplayViewModel.currentRound!;
+      expect(treasureRound.targetCoord, const GridCoord(2, 3));
+      expect(treasureRound.instruction, isNot(contains('D2')));
+      expect(
+        treasureRound.clues.join(' '),
+        isNot(contains(RegExp(r'\b[ABCDE][1-5]\b'))),
+      );
+      expect(
+        await deps.gameplayViewModel.handleGridCellTap(const GridCoord(3, 3)),
+        isFalse,
+      );
+      expect(
+        await deps.gameplayViewModel.handleGridCellTap(const GridCoord(2, 3)),
+        isTrue,
+      );
+
       final mapBuilder = deps.adventuresViewModel.findGame('construye_mapa')!;
       deps.gameplayViewModel.startNewSession(game: mapBuilder, levelNumber: 1);
       expect(

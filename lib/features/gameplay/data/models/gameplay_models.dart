@@ -58,6 +58,14 @@ class GridCoord {
   int get hashCode => Object.hash(row, col);
 }
 
+/// Tramo de una ruta de casillas en una dirección cardinal.
+class GridPathStep {
+  const GridPathStep(this.direction, this.distance);
+
+  final CardinalDirection direction;
+  final int distance;
+}
+
 /// Definición de un reto o etapa dentro de una sesión de juego.
 class GameRoundChallenge {
   const GameRoundChallenge({
@@ -67,7 +75,8 @@ class GameRoundChallenge {
     required this.instruction,
     required this.hint,
     this.startCoord = const GridCoord(4, 1),
-    this.targetCoord = const GridCoord(1, 4),
+    GridCoord? targetCoord,
+    this.pathSteps = const <GridPathStep>[],
     this.obstacles = const <GridCoord>[],
     this.startDirection = CardinalDirection.n,
     this.targetDirection = CardinalDirection.ne,
@@ -80,7 +89,7 @@ class GameRoundChallenge {
     this.symbolLabel = 'Cumbre',
     this.landmarks = const <GridLandmarkPlacement>[],
     this.obstacleType = GridObstacleType.rock,
-  });
+  }) : _targetCoord = targetCoord ?? const GridCoord(1, 4);
 
   final int roundNumber;
   final ChallengeMechanicType mechanic;
@@ -88,7 +97,8 @@ class GameRoundChallenge {
   final String instruction;
   final String hint;
   final GridCoord startCoord;
-  final GridCoord targetCoord;
+  final GridCoord _targetCoord;
+  final List<GridPathStep> pathSteps;
   final List<GridCoord> obstacles;
   final CardinalDirection startDirection;
   final CardinalDirection targetDirection;
@@ -101,6 +111,27 @@ class GameRoundChallenge {
   final String symbolLabel;
   final List<GridLandmarkPlacement> landmarks;
   final GridObstacleType obstacleType;
+
+  GridCoord get targetCoord {
+    if (pathSteps.isEmpty) return _targetCoord;
+
+    return pathSteps.fold(startCoord, (coord, step) {
+      final (dRow, dCol) = switch (step.direction) {
+        CardinalDirection.n => (-1, 0),
+        CardinalDirection.ne => (-1, 1),
+        CardinalDirection.e => (0, 1),
+        CardinalDirection.se => (1, 1),
+        CardinalDirection.s => (1, 0),
+        CardinalDirection.so => (1, -1),
+        CardinalDirection.o => (0, -1),
+        CardinalDirection.no => (-1, -1),
+      };
+      return GridCoord(
+        coord.row + dRow * step.distance,
+        coord.col + dCol * step.distance,
+      );
+    });
+  }
 
   GridLandmark? landmarkAt(GridCoord coord) {
     for (final placement in landmarks) {

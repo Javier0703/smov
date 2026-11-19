@@ -370,73 +370,78 @@ class GameplayService {
 
   List<GameRoundChallenge> _buildTesoroSecretoRounds(int level) {
     if (level == 1) {
-      return const <GameRoundChallenge>[
-        GameRoundChallenge(
+      return <GameRoundChallenge>[
+        _buildTreasureRound(
           roundNumber: 1,
-          mechanic: ChallengeMechanicType.gridTreasureClues,
           title: 'Pergamino 1 · Dos pistas',
-          instruction: 'Desde el faro (D2), sube 2 casillas al Norte y 2 al Este. Toca la casilla del tesoro.',
-          hint: 'Camina D2 -> B2 -> B4.',
           startCoord: GridCoord(3, 1),
-          targetCoord: GridCoord(1, 3),
-          clues: <String>[
-            '1. Parte desde el Faro Antiguo en D2.',
-            '2. Avanza 2 casillas al Norte y 2 al Este.',
+          pathSteps: <GridPathStep>[
+            GridPathStep(CardinalDirection.n, 2),
+            GridPathStep(CardinalDirection.e, 2),
           ],
         ),
       ];
     }
 
     if (level == 2) {
-      return const <GameRoundChallenge>[
-        GameRoundChallenge(
+      return <GameRoundChallenge>[
+        _buildTreasureRound(
           roundNumber: 1,
-          mechanic: ChallengeMechanicType.gridTreasureClues,
           title: 'Pergamino 2 · Pistas y leyenda',
-          instruction: 'La leyenda muestra el tesoro bajo la palmera. Sigue el norte, el este y el sur.',
-          hint:
-              'Empieza en D2, sube a B2, gira al Este y baja al Sur hasta D4.',
           startCoord: GridCoord(3, 1),
-          targetCoord: GridCoord(3, 3),
-          clues: <String>[
-            '1. Parte desde D2.',
-            '2. Camina 2 casillas al Norte.',
-            '3. Avanza 2 casillas al Este y una al Sur.',
+          pathSteps: <GridPathStep>[
+            GridPathStep(CardinalDirection.n, 2),
+            GridPathStep(CardinalDirection.e, 2),
+            GridPathStep(CardinalDirection.s, 1),
           ],
         ),
       ];
     }
 
-    return const <GameRoundChallenge>[
-      GameRoundChallenge(
+    return <GameRoundChallenge>[
+      _buildTreasureRound(
         roundNumber: 1,
-        mechanic: ChallengeMechanicType.gridTreasureClues,
         title: 'Pergamino 1 · El Cofre del Cartógrafo',
-        instruction: 'Lee las 3 pistas del pergamino y toca la casilla exacta donde está enterrado el tesoro.',
-        hint: 'Empieza en D2 -> sube 2 casillas al Norte (B2) -> avanza 2 casillas al Este (B4).',
         startCoord: GridCoord(3, 1),
-        targetCoord: GridCoord(1, 3),
-        clues: <String>[
-          '1. Parte desde el Faro Antiguo en la casilla D2.',
-          '2. Camina 2 casillas hacia el Norte (N) siguiendo la costa.',
-          '3. Gira al Este (E) y avanza 2 casillas más: ¡ahí brilla el cofre (B4)!',
+        pathSteps: <GridPathStep>[
+          GridPathStep(CardinalDirection.n, 2),
+          GridPathStep(CardinalDirection.e, 2),
         ],
       ),
-      GameRoundChallenge(
+      _buildTreasureRound(
         roundNumber: 2,
-        mechanic: ChallengeMechanicType.gridTreasureClues,
         title: 'Pergamino 2 · La Reliquia del Valle',
-        instruction: 'Sigue las pistas encadenadas desde la casilla A5 para descubrir el escondite secreto.',
-        hint: 'Desde A5 baja 3 casillas al Sur (D5) y muévete 3 casillas al Oeste (D2).',
         startCoord: GridCoord(0, 4),
-        targetCoord: GridCoord(3, 1),
-        clues: <String>[
-          '1. Empieza en la Cumbre Nevada de la casilla A5.',
-          '2. Desciende 3 casillas hacia el Sur (S).',
-          '3. Avanza 3 casillas hacia el Oeste (O) hasta la casilla D2.',
+        pathSteps: <GridPathStep>[
+          GridPathStep(CardinalDirection.s, 3),
+          GridPathStep(CardinalDirection.o, 3),
         ],
       ),
     ];
+  }
+
+  GameRoundChallenge _buildTreasureRound({
+    required int roundNumber,
+    required String title,
+    required GridCoord startCoord,
+    required List<GridPathStep> pathSteps,
+  }) {
+    final clues = <String>[
+      for (var index = 0; index < pathSteps.length; index++)
+        '${index + 1}. Avanza ${pathSteps[index].distance} '
+            'casillas al ${pathSteps[index].direction.label}.',
+    ];
+
+    return GameRoundChallenge(
+      roundNumber: roundNumber,
+      mechanic: ChallengeMechanicType.gridTreasureClues,
+      title: title,
+      instruction: 'Sigue las pistas desde el explorador del tablero y toca la casilla del tesoro.',
+      hint: clues.join(' '),
+      startCoord: startCoord,
+      pathSteps: pathSteps,
+      clues: clues,
+    );
   }
 
   List<GameRoundChallenge> _buildConstruyeMapaRounds(int level) {
