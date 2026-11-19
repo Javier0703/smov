@@ -57,14 +57,17 @@ class HowToPlayScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
+                      Wrap(
+                        spacing: AppSpacing.xs,
+                        runSpacing: AppSpacing.xs,
+                        alignment: WrapAlignment.spaceBetween,
+                        crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           StatusBadge(
                             label: AppStrings.howToPlayTag,
                             variant: StatusBadgeVariant.brand,
                             icon: game.icon,
                           ),
-                          const Spacer(),
                           StatusBadge(
                             label: '+${levelInfo.rewardCoins} Brújulas',
                             variant: StatusBadgeVariant.success,

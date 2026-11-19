@@ -224,8 +224,7 @@ class _QuestionFormCard extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.md),
           AppTextField(
-            label:
-                'Enunciado de la pregunta (usa "casillas" en lugar de "pasos")',
+            label: 'Enunciado de la pregunta (utiliza "casillas" para movimientos)',
             controller: promptController,
             maxLines: 3,
             errorText: viewModel.promptError,

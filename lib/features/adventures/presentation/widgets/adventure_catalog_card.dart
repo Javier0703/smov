@@ -91,7 +91,10 @@ class AdventureCatalogCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.xs),
-                Row(
+                Wrap(
+                  spacing: AppSpacing.xs,
+                  runSpacing: AppSpacing.xs,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     const Icon(
                       Icons.emoji_events_outlined,
@@ -105,7 +108,6 @@ class AdventureCatalogCard extends StatelessWidget {
                         color: AppColors.brandPrimary,
                       ),
                     ),
-                    const Spacer(),
                     Text(
                       'Elegir nivel',
                       style: AppTypography.labelSmall.copyWith(

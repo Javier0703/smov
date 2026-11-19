@@ -72,51 +72,70 @@ class WelcomeHeroCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
               border: Border.all(color: AppColors.borderDefault),
             ),
-            child: Row(
-              children: [
-                ExplorerAvatarWidget(
-                  config: avatarConfig,
-                  size: 84,
-                  backgroundColor: Colors.white,
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Explorador Alex · $selectedClassId',
-                        style: AppTypography.titleMedium.copyWith(
-                          color: AppColors.inkStrong,
-                        ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final text = Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Explorador Alex · $selectedClassId',
+                      style: AppTypography.titleMedium.copyWith(
+                        color: AppColors.inkStrong,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Brújula lista · 10 misiones geográficas y pasaporte de comunidades autónomas.',
-                        style: AppTypography.bodySmall.copyWith(
-                          color: AppColors.textMuted,
-                        ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Brújula lista · 10 misiones geográficas y pasaporte de comunidades autónomas.',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.textMuted,
                       ),
-                      const SizedBox(height: AppSpacing.xs),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: TextButton.icon(
-                          onPressed: onCustomizeAvatarTap,
-                          icon: const Icon(Icons.checkroom_rounded, size: 18),
-                          label: const Text('Personalizar'),
-                          style: TextButton.styleFrom(
-                            foregroundColor: AppColors.brandPrimary,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.sm,
-                              vertical: AppSpacing.xxs,
-                            ),
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton.icon(
+                        onPressed: onCustomizeAvatarTap,
+                        icon: const Icon(Icons.checkroom_rounded, size: 18),
+                        label: const Text('Personalizar'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.brandPrimary,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm,
+                            vertical: AppSpacing.xxs,
                           ),
                         ),
                       ),
+                    ),
+                  ],
+                );
+                if (constraints.maxWidth < 420) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ExplorerAvatarWidget(
+                        config: avatarConfig,
+                        size: 84,
+                        backgroundColor: AppColors.surfaceElevated,
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      text,
                     ],
-                  ),
-                ),
-              ],
+                  );
+                }
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ExplorerAvatarWidget(
+                      config: avatarConfig,
+                      size: 84,
+                      backgroundColor: AppColors.surfaceElevated,
+                    ),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(child: text),
+                  ],
+                );
+              },
             ),
           ),
         ],

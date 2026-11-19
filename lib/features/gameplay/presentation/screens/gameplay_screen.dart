@@ -397,8 +397,11 @@ class _CompassChallengeBoard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        Wrap(
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: AppSpacing.xs,
+          runSpacing: AppSpacing.xs,
           children: [
             Text(
               viewModel.activeLevelNumber == 3
@@ -496,7 +499,6 @@ class _SpainMapChallengeBoard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(width: AppSpacing.xs),
               Text(
                 'Encuentra la posición que cumple las 3 pistas',
                 style: AppTypography.labelMedium.copyWith(
@@ -614,7 +616,10 @@ class _MissionControlSidePanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
+          Wrap(
+            spacing: AppSpacing.xs,
+            runSpacing: AppSpacing.xs,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               StatusBadge(
                 label:
@@ -622,7 +627,6 @@ class _MissionControlSidePanel extends StatelessWidget {
                 variant: StatusBadgeVariant.brand,
                 icon: Icons.flag_rounded,
               ),
-              const Spacer(),
               if (viewModel.activeGame?.id == 'llegar_a_tiempo')
                 StatusBadge(
                   label: AppFormatters.formatCountdown(

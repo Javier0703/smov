@@ -113,10 +113,12 @@ class _WelcomeExpeditionPreviewCard extends StatelessWidget {
                 size: 20,
               ),
               const SizedBox(width: AppSpacing.xs),
-              Text(
-                'Mapa interactivo de la expedición',
-                style: AppTypography.titleSmall.copyWith(
-                  color: AppColors.brandPrimary,
+              Expanded(
+                child: Text(
+                  'Mapa interactivo de la expedición',
+                  style: AppTypography.titleSmall.copyWith(
+                    color: AppColors.brandPrimary,
+                  ),
                 ),
               ),
             ],

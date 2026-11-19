@@ -154,52 +154,76 @@ class _ExplorerPassportHeaderCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              GestureDetector(
-                onTap: onAvatarTap,
-                child: ExplorerAvatarWidget(
-                  config: user.avatarConfig,
-                  size: 72,
-                  backgroundColor: AppColors.surfaceMuted,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final details = Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Wrap(
+                    spacing: AppSpacing.xs,
+                    runSpacing: AppSpacing.xs,
+                    children: [
+                      StatusBadge(
+                        label: 'Clase ${user.classId}',
+                        variant: StatusBadgeVariant.brand,
+                      ),
+                      StatusBadge(
+                        label: '${user.streakDays} días seguidos',
+                        variant: StatusBadgeVariant.success,
+                        icon: Icons.local_fire_department_rounded,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    'Explorador ${user.displayName}',
+                    style: AppTypography.titleLarge.copyWith(
+                      color: AppColors.inkStrong,
+                    ),
+                  ),
+                  Text(
+                    'Colegio · Segundo Ciclo de Primaria',
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.textMuted,
+                    ),
+                  ),
+                ],
+              );
+
+              if (constraints.maxWidth < 420) {
+                return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        StatusBadge(
-                          label: 'Clase ${user.classId}',
-                          variant: StatusBadgeVariant.brand,
-                        ),
-                        const SizedBox(width: AppSpacing.xs),
-                        StatusBadge(
-                          label: '${user.streakDays} días seguidos',
-                          variant: StatusBadgeVariant.success,
-                          icon: Icons.local_fire_department_rounded,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      'Explorador ${user.displayName}',
-                      style: AppTypography.titleLarge.copyWith(
-                        color: AppColors.inkStrong,
+                    GestureDetector(
+                      onTap: onAvatarTap,
+                      child: ExplorerAvatarWidget(
+                        config: user.avatarConfig,
+                        size: 72,
+                        backgroundColor: AppColors.surfaceMuted,
                       ),
                     ),
-                    Text(
-                      'Colegio · Segundo Ciclo de Primaria',
-                      style: AppTypography.bodySmall.copyWith(
-                        color: AppColors.textMuted,
-                      ),
-                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    details,
                   ],
-                ),
-              ),
-            ],
+                );
+              }
+
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  GestureDetector(
+                    onTap: onAvatarTap,
+                    child: ExplorerAvatarWidget(
+                      config: user.avatarConfig,
+                      size: 72,
+                      backgroundColor: AppColors.surfaceMuted,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(child: details),
+                ],
+              );
+            },
           ),
           const SizedBox(height: AppSpacing.sm),
           Wrap(
@@ -255,6 +279,7 @@ class _ActionChipLink extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppSpacing.radiusPill),
       child: Container(
+        constraints: const BoxConstraints(maxWidth: 220),
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.sm,
           vertical: 8,
@@ -273,11 +298,15 @@ class _ActionChipLink extends StatelessWidget {
           children: [
             Icon(icon, size: 16, color: AppColors.brandPrimary),
             const SizedBox(width: 6),
-            Text(
-              label,
-              style: AppTypography.labelSmall.copyWith(
-                color: AppColors.brandPrimary,
-                fontWeight: FontWeight.w800,
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: AppTypography.labelSmall.copyWith(
+                  color: AppColors.brandPrimary,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             ),
           ],
@@ -294,35 +323,49 @@ class _KpiMetricsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: InfoTile(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final tiles = <Widget>[
+          InfoTile(
             value: '${summary.piecesCount}',
             label: AppStrings.homePiecesLabel,
             icon: Icons.extension_rounded,
             accentColor: AppColors.brandPrimary,
           ),
-        ),
-        const SizedBox(width: AppSpacing.xs),
-        Expanded(
-          child: InfoTile(
+          InfoTile(
             value: '${summary.medalsCount}',
             label: AppStrings.homeBadgesLabel,
             icon: Icons.emoji_events_rounded,
             accentColor: AppColors.success,
           ),
-        ),
-        const SizedBox(width: AppSpacing.xs),
-        Expanded(
-          child: InfoTile(
+          InfoTile(
             value: Formatters.percentage(summary.routeProgressPercent),
             label: AppStrings.homeRouteLabel,
             icon: Icons.route_rounded,
             accentColor: AppColors.brandAccent,
           ),
-        ),
-      ],
+        ];
+
+        if (constraints.maxWidth < 420) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (var i = 0; i < tiles.length; i++) ...[
+                if (i > 0) const SizedBox(height: AppSpacing.xs),
+                tiles[i],
+              ],
+            ],
+          );
+        }
+        return Row(
+          children: [
+            for (var i = 0; i < tiles.length; i++) ...[
+              if (i > 0) const SizedBox(width: AppSpacing.xs),
+              Expanded(child: tiles[i]),
+            ],
+          ],
+        );
+      },
     );
   }
 }
@@ -348,48 +391,68 @@ class _QuickNavigationGrid extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppSpacing.xs),
-        Row(
-          children: [
-            Expanded(
-              child: _ShortcutTile(
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final firstRow = <Widget>[
+              _ShortcutTile(
                 icon: Icons.explore_rounded,
                 title: 'Elige tu aventura',
                 subtitle: '10 retos geográficos',
                 onTap: () => onNavigateRoute('/adventures'),
               ),
-            ),
-            const SizedBox(width: AppSpacing.xs),
-            Expanded(
-              child: _ShortcutTile(
+              _ShortcutTile(
                 icon: Icons.menu_book_rounded,
                 title: 'Mi pasaporte',
                 subtitle: '17 sellos y postales',
                 onTap: () => onNavigateRoute('/passport'),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.xs),
-        Row(
-          children: [
-            Expanded(
-              child: _ShortcutTile(
+            ];
+            final secondRow = <Widget>[
+              _ShortcutTile(
                 icon: Icons.emoji_events_rounded,
                 title: 'Mi medallero',
                 subtitle: '8 insignias de logro',
                 onTap: () => onNavigateRoute('/medals'),
               ),
-            ),
-            const SizedBox(width: AppSpacing.xs),
-            Expanded(
-              child: _ShortcutTile(
+              _ShortcutTile(
                 icon: Icons.school_rounded,
                 title: 'Espacio docente',
                 subtitle: 'Aula 4.º A y preguntas',
                 onTap: () => onNavigateRoute('/teacher/classes/4A/activity'),
               ),
-            ),
-          ],
+            ];
+            if (constraints.maxWidth < 420) {
+              return Column(
+                children: [
+                  for (final tile in [...firstRow, ...secondRow]) ...[
+                    tile,
+                    const SizedBox(height: AppSpacing.xs),
+                  ],
+                ],
+              );
+            }
+            return Column(
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: firstRow[0]),
+                    const SizedBox(width: AppSpacing.xs),
+                    Expanded(child: firstRow[1]),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: secondRow[0]),
+                    const SizedBox(width: AppSpacing.xs),
+                    Expanded(child: secondRow[1]),
+                  ],
+                ),
+              ],
+            );
+          },
         ),
       ],
     );

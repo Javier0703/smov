@@ -10,6 +10,37 @@ void main() {
     'BrujulaQuestApp — Pruebas de Integración de Vistas (Widget Tests)',
     () {
       testWidgets(
+        'Bienvenida e Inicio no desbordan en móvil estrecho con texto ampliado',
+        (WidgetTester tester) async {
+          await tester.binding.setSurfaceSize(const Size(320, 568));
+          tester.view.physicalSize = const Size(320, 568);
+          tester.view.devicePixelRatio = 1;
+          tester.platformDispatcher.textScaleFactorTestValue = 1.5;
+          addTearDown(() {
+            tester.binding.setSurfaceSize(null);
+            tester.view.resetPhysicalSize();
+            tester.view.resetDevicePixelRatio();
+            tester.platformDispatcher.clearTextScaleFactorTestValue();
+          });
+
+          final dependencies = AppDependencies();
+          addTearDown(dependencies.dispose);
+
+          await tester.pumpWidget(BrujulaQuestApp(dependencies: dependencies));
+          await tester.pumpAndSettle();
+
+          expect(tester.takeException(), isNull);
+          await tester.ensureVisible(find.text(AppStrings.welcomeStartButton));
+          await tester.pumpAndSettle();
+          await tester.tap(find.text(AppStrings.welcomeStartButton));
+          await tester.pumpAndSettle();
+
+          expect(tester.takeException(), isNull);
+          expect(find.text('¡Hola, Alex!'), findsOneWidget);
+        },
+      );
+
+      testWidgets(
         'Renderiza Bienvenida y navega al Inicio del alumno mostrando pasaporte, sellos y monedas',
         (WidgetTester tester) async {
           await tester.binding.setSurfaceSize(const Size(900, 1200));

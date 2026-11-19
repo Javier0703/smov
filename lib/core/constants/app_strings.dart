@@ -1,4 +1,4 @@
-/// Textos constantes y vocabulario pedagógico unificado (hablar de casillas, no de pasos).
+/// Textos constantes y vocabulario pedagógico unificado para movimientos en cuadrícula.
 class AppStrings {
   const AppStrings._();
 

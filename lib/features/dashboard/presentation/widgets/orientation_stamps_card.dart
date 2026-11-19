@@ -21,8 +21,11 @@ class OrientationStampsCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.xs,
             children: [
               Text(
                 AppStrings.homeOrientationStampsTitle,
@@ -39,8 +42,10 @@ class OrientationStampsCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.sm),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+          Wrap(
+            alignment: WrapAlignment.spaceAround,
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.sm,
             children: _directions
                 .map(
                   (code) => _DirectionStampBadge(

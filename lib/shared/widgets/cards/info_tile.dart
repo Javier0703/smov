@@ -59,8 +59,6 @@ class InfoTile extends StatelessWidget {
           ),
           Text(
             label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w700,

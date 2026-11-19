@@ -24,7 +24,7 @@
 - **Temas Dinámicos**: Soportar paletas configurables por el usuario (*Aventura/Llamativo*, *Pastel*, *Calmado*) manteniendo los tokens de `lib/core/theme/` y evitando fondos blancos planos.
 
 ## 3. Reglas Pedagógicas y UX Obligatorias
-- **Vocabulario**: Usar siempre **"casillas"** en desplazamientos sobre cuadrícula (nunca "pasos").
+- **Vocabulario**: Usar siempre **"casillas"** en desplazamientos sobre cuadrícula.
 - **Iconografía**:
   - Brújula con aguja en **rojo (Norte) y blanco (Sur)**.
   - Icono de ubicación con punto central marcado (evitar que parezca una gota de agua).

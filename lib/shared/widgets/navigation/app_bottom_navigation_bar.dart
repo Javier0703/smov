@@ -41,41 +41,34 @@ class AppBottomNavigationBar extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: <Widget>[
-              _NavDestinationItem(
-                label: AppStrings.navHome,
-                icon: Icons.home_outlined,
-                selectedIcon: Icons.home_rounded,
-                isSelected: currentIndex == 0,
-                onTap: () => handleSelect(0),
-              ),
-              _NavDestinationItem(
-                label: AppStrings.navMissions,
-                icon: Icons.map_outlined,
-                selectedIcon: Icons.map_rounded,
-                isSelected: currentIndex == 1,
-                onTap: () => handleSelect(1),
-              ),
-              _NavDestinationItem(
-                label: AppStrings.navPassport,
-                icon: Icons.menu_book_outlined,
-                selectedIcon: Icons.menu_book_rounded,
-                isSelected: currentIndex == 2,
-                onTap: () => handleSelect(2),
-              ),
-              _NavDestinationItem(
-                label: AppStrings.navMedals,
-                icon: Icons.workspace_premium_outlined,
-                selectedIcon: Icons.workspace_premium_rounded,
-                isSelected: currentIndex == 3,
-                onTap: () => handleSelect(3),
-              ),
-              _NavDestinationItem(
-                label: 'Mochila',
-                icon: Icons.backpack_outlined,
-                selectedIcon: Icons.backpack_rounded,
-                isSelected: currentIndex == 4,
-                onTap: () => handleSelect(4),
-              ),
+              for (var index = 0; index < 5; index++)
+                Expanded(
+                  child: _NavDestinationItem(
+                    label: switch (index) {
+                      0 => AppStrings.navHome,
+                      1 => AppStrings.navMissions,
+                      2 => AppStrings.navPassport,
+                      3 => AppStrings.navMedals,
+                      _ => 'Mochila',
+                    },
+                    icon: switch (index) {
+                      0 => Icons.home_outlined,
+                      1 => Icons.map_outlined,
+                      2 => Icons.menu_book_outlined,
+                      3 => Icons.workspace_premium_outlined,
+                      _ => Icons.backpack_outlined,
+                    },
+                    selectedIcon: switch (index) {
+                      0 => Icons.home_rounded,
+                      1 => Icons.map_rounded,
+                      2 => Icons.menu_book_rounded,
+                      3 => Icons.workspace_premium_rounded,
+                      _ => Icons.backpack_rounded,
+                    },
+                    isSelected: currentIndex == index,
+                    onTap: () => handleSelect(index),
+                  ),
+                ),
             ],
           ),
         ),

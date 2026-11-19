@@ -36,67 +36,117 @@ class AppTopBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final effectiveBack = onBackPressed ?? onBack;
     final hasBack = showBackButton || effectiveBack != null;
+    final titleBlock = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      spacing: 2,
+      children: <Widget>[
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            color: AppColors.primary,
+            height: 1.15,
+          ),
+        ),
+        if (subtitle != null)
+          Text(
+            subtitle!,
+            style: const TextStyle(
+              fontSize: 13.5,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textSecondary,
+            ),
+          ),
+      ],
+    );
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        spacing: AppSpacing.sm,
-        children: <Widget>[
-          if (hasBack)
-            AppIconButton(
-              icon: Icons.arrow_back_rounded,
-              tooltip: 'Volver atrás',
-              onPressed:
-                  effectiveBack ??
-                  () {
-                    if (Navigator.of(context).canPop()) {
-                      Navigator.of(context).pop();
-                    }
-                  },
-            ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              spacing: 2,
-              children: <Widget>[
-                Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.primary,
-                    height: 1.15,
-                  ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth < 520) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (hasBack) ...[
+                      AppIconButton(
+                        icon: Icons.arrow_back_rounded,
+                        tooltip: 'Volver atrás',
+                        onPressed:
+                            effectiveBack ??
+                            () {
+                              if (Navigator.of(context).canPop()) {
+                                Navigator.of(context).pop();
+                              }
+                            },
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                    ],
+                    Expanded(child: titleBlock),
+                    if (coins != null) ...[
+                      const SizedBox(width: AppSpacing.xs),
+                      _CoinsHeaderBadge(coins: coins!, onTap: onCoinsTap),
+                    ],
+                  ],
                 ),
-                if (subtitle != null)
-                  Text(
-                    subtitle!,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textSecondary,
-                    ),
+                if ((actions?.isNotEmpty ?? false) ||
+                    trailingBadgeText != null ||
+                    trailingWidget != null) ...[
+                  const SizedBox(height: AppSpacing.xs),
+                  Wrap(
+                    spacing: AppSpacing.xs,
+                    runSpacing: AppSpacing.xs,
+                    children: [
+                      if (trailingBadgeText != null)
+                        StatusBadge(
+                          text: trailingBadgeText!,
+                          backgroundColor: AppColors.surfaceVariant,
+                          textColor: AppColors.primary,
+                        ),
+                      ...?actions,
+                      ?trailingWidget,
+                    ],
                   ),
+                ],
               ],
-            ),
-          ),
-          if (coins != null)
-            _CoinsHeaderBadge(coins: coins!, onTap: onCoinsTap),
-          if (trailingBadgeText != null)
-            StatusBadge(
-              text: trailingBadgeText!,
-              backgroundColor: AppColors.surfaceVariant,
-              textColor: AppColors.primary,
-            ),
-          ...?actions,
-          ?trailingWidget,
-        ],
+            );
+          }
+
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            spacing: AppSpacing.sm,
+            children: <Widget>[
+              if (hasBack)
+                AppIconButton(
+                  icon: Icons.arrow_back_rounded,
+                  tooltip: 'Volver atrás',
+                  onPressed:
+                      effectiveBack ??
+                      () {
+                        if (Navigator.of(context).canPop()) {
+                          Navigator.of(context).pop();
+                        }
+                      },
+                ),
+              Expanded(child: titleBlock),
+              if (coins != null)
+                _CoinsHeaderBadge(coins: coins!, onTap: onCoinsTap),
+              if (trailingBadgeText != null)
+                StatusBadge(
+                  text: trailingBadgeText!,
+                  backgroundColor: AppColors.surfaceVariant,
+                  textColor: AppColors.primary,
+                ),
+              ...?actions,
+              ?trailingWidget,
+            ],
+          );
+        },
       ),
     );
   }
