@@ -451,7 +451,7 @@ abstract final class AdventuresCatalogDefinitions {
         howToPlaySteps: const <String>[
           'Responderás 7 retos seguidos de todos los bloques de Geografía.',
           'Puedes abrir tu mochila en cualquier prueba para usar lupas, reloj o brújula especial.',
-          'Al completar la expedición recibirás el título de ¡Gran explorador! y +300 monedas.',
+          'Al completar la expedición recibirás el título de ¡Gran explorador! y +300 Brújulas.',
         ],
         achievementTitle: '¡Gran explorador!',
         medalNumber: 8,
@@ -461,7 +461,7 @@ abstract final class AdventuresCatalogDefinitions {
           (
             'EXPEDICIÓN OFICIAL',
             'Las 7 pruebas del Gran Explorador',
-            'Supera el recorrido completo de 7 retos para desbloquear el diploma y +300 monedas.',
+            'Supera el recorrido completo de 7 retos para desbloquear el diploma y +300 Brújulas.',
             300,
           ),
           (

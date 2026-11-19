@@ -2,9 +2,9 @@
 class AppStrings {
   const AppStrings._();
 
-  static const String appName = 'Brújula Quest · Sociales';
-  static const String appBadge = 'Brújula Quest · Sociales';
-  static const String appBrandTag = 'BRÚJULA QUEST · SOCIALES';
+  static const String appName = 'Brújula Quest · Sociales (GeoExplorer)';
+  static const String appBadge = 'Brújula Quest · Sociales (GeoExplorer)';
+  static const String appBrandTag = 'BRÚJULA QUEST · SOCIALES (GeoExplorer)';
 
   // Bienvenida (/welcome)
   static const String welcomeTitle = '¡Tu aventura tiene un nombre!';
@@ -41,7 +41,7 @@ class AppStrings {
   static const String adventuresScreenTitle = 'Elige tu aventura';
   static const String adventuresScreenTag = '10 JUEGOS DE EXPLORACIÓN';
   static const String adventuresScreenSubtitle =
-      'Supera cada reto para ganar monedas, sellos en tu pasaporte e insignias en tu medallero.';
+      'Supera cada reto para ganar Brújulas, sellos en tu pasaporte e insignias en tu medallero.';
 
   // Cómo jugar (/games/:gameId/how-to)
   static const String howToPlayTitle = 'Antes de jugar';
@@ -51,7 +51,7 @@ class AppStrings {
   // Mochila en partida y tienda (/inventory)
   static const String inGameBackpackTitle = 'Tu mochila en esta prueba';
   static const String inventoryScreenTitle = 'Mi mochila';
-  static const String inventoryScreenSubtitle = 'Tus monedas y ayudas';
+  static const String inventoryScreenSubtitle = 'Tus Brújulas y ayudas';
   static const String itemMagnifyingGlass = 'Lupa de pistas';
   static const int itemMagnifyingGlassCost = 120;
   static const String itemHourglass = 'Reloj de arena';
@@ -68,7 +68,7 @@ class AppStrings {
   // Medallero (/medals)
   static const String medalsScreenTitle = 'Mi medallero';
   static const String medalsScreenSubtitle = 'Tus insignias de exploración';
-  static const String medalsRedeemButton = 'Canjear mis monedas';
+  static const String medalsRedeemButton = 'Canjear mis Brújulas';
 
   // Pasaporte (/passport)
   static const String passportScreenTitle = 'Mi pasaporte';

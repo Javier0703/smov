@@ -122,18 +122,18 @@ class RedeemConfirmScreen extends StatelessWidget {
                       const SizedBox(height: AppSpacing.lg),
                       _AccountingRow(
                         label: 'Saldo actual en mochila',
-                        value: '$currentCoins monedas',
+                        value: '$currentCoins Brújulas',
                       ),
                       const Divider(height: AppSpacing.md),
                       _AccountingRow(
                         label: 'Coste de ${item.name}',
-                        value: '-${item.costCoins} monedas',
+                        value: '-${item.costCoins} Brújulas',
                         isNegative: true,
                       ),
                       const Divider(height: AppSpacing.md),
                       _AccountingRow(
                         label: 'Saldo restante tras el canje',
-                        value: '$projectedCoins monedas',
+                        value: '$projectedCoins Brújulas',
                         isBold: true,
                       ),
                     ],
@@ -142,7 +142,7 @@ class RedeemConfirmScreen extends StatelessWidget {
                 const SizedBox(height: AppSpacing.lg),
                 AppPrimaryButton(
                   label: canAfford
-                      ? 'Confirmar canje (-${item.costCoins} monedas)'
+                      ? 'Confirmar canje (-${item.costCoins} Brújulas)'
                       : 'Saldo insuficiente',
                   icon: Icons.check_circle_rounded,
                   isLoading: viewModel.isRedeeming,

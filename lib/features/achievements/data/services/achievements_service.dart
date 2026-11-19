@@ -16,7 +16,7 @@ class AchievementsService {
     return <MedalItemModel>[
       MedalItemModel(
         type: MedalType.buenRumbo,
-        subtitle: 'Domina los puntos cardinales en ¡Rumbo desconocido!',
+        subtitle: 'Domina los puntos cardinales en ¡Rumbo desconocido! Úsala para practicar y canjear recompensas.',
         relatedGameId: 'rumbo_desconocido',
         isUnlocked: unlocked.contains(1),
       ),

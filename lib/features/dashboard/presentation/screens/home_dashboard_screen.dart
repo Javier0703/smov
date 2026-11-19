@@ -97,7 +97,7 @@ class HomeDashboardScreen extends StatelessWidget {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text(
-                            '¡Racha diaria! Has ganado +25 monedas para tu mochila.',
+                            '¡Racha diaria! Has ganado +25 Brújulas.',
                           ),
                         ),
                       );
@@ -224,7 +224,7 @@ class _ExplorerPassportHeaderCard extends StatelessWidget {
               if (!summary.dailyRewardClaimed)
                 _ActionChipLink(
                   icon: Icons.card_giftcard_rounded,
-                  label: 'Recompensa diaria (+25)',
+                  label: 'Recompensa diaria (+25 Brújulas)',
                   highlight: true,
                   onTap: onClaimDailyReward,
                 ),
@@ -471,7 +471,7 @@ class _PaletteMenuButton extends StatelessWidget {
             (p) => CheckedPopupMenuItem<AppPaletteType>(
               value: p,
               checked: p == currentPalette,
-              child: Text(AppColors.paletteFor(p).name),
+              child: Text(p.label),
             ),
           )
           .toList(),

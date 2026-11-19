@@ -24,7 +24,9 @@ class MedalShowcaseCard extends StatelessWidget {
     return AppBaseCard(
       onTap: onTapPractice,
       padding: const EdgeInsets.all(AppSpacing.md),
-      backgroundColor: medal.isUnlocked ? Colors.white : AppColors.surfaceMuted,
+      backgroundColor: medal.isUnlocked
+          ? AppColors.cardBackground
+          : AppColors.surfaceMuted,
       child: Row(
         children: [
           MedalBadgeWidget(

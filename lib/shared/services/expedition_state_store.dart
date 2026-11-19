@@ -127,6 +127,7 @@ class ExpeditionStateStore extends ChangeNotifier {
 
   AppPaletteType _palette = AppPaletteType.oceanAdventure;
   bool _dailyRewardClaimed = false;
+  String? _lastDailyRewardDate;
 
   /// Inventario actual del alumno (`magnifying_glass`, `hourglass`, `special_compass`).
   final Map<String, int> _inventoryCounts = <String, int>{
@@ -178,6 +179,10 @@ class ExpeditionStateStore extends ChangeNotifier {
       <String, CustomQuestionData>{};
 
   void _initializeDefaultData() {
+    _lastDailyRewardDate = _localStorage.read<String>('daily_reward_last_date');
+    final today = _dateKey(DateTime.now());
+    _dailyRewardClaimed = _lastDailyRewardDate == today;
+
     const allGames = <String>[
       'rumbo_desconocido',
       'brujula_perdida',
@@ -368,18 +373,46 @@ class ExpeditionStateStore extends ChangeNotifier {
     notifyListeners();
   }
 
+  String _dateKey(DateTime date) =>
+      '${date.year.toString().padLeft(4, '0')}-'
+      '${date.month.toString().padLeft(2, '0')}-'
+      '${date.day.toString().padLeft(2, '0')}';
+
   void updateAvatarConfig(AvatarConfig config) {
     _currentUser = _currentUser.copyWith(avatarConfig: config);
     notifyListeners();
   }
 
   bool claimDailyStreakReward() {
-    if (_dailyRewardClaimed) return false;
+    final today = _dateKey(DateTime.now());
+    if (_dailyRewardClaimed || _lastDailyRewardDate == today) return false;
+
+    if (_lastDailyRewardDate != null) {
+      final lastDate = DateTime.tryParse(_lastDailyRewardDate!);
+      final difference = lastDate == null
+          ? null
+          : DateTime(
+              DateTime.now().year,
+              DateTime.now().month,
+              DateTime.now().day,
+            ).difference(DateTime(lastDate.year, lastDate.month, lastDate.day));
+      if (difference != null && difference.inDays == 1) {
+        _currentUser = _currentUser.copyWith(
+          streakDays: _currentUser.streakDays + 1,
+        );
+      } else {
+        _currentUser = _currentUser.copyWith(streakDays: 1);
+      }
+    } else {
+      _currentUser = _currentUser.copyWith(
+        streakDays: _currentUser.streakDays + 1,
+      );
+    }
+
+    _lastDailyRewardDate = today;
     _dailyRewardClaimed = true;
-    _currentUser = _currentUser.copyWith(
-      coins: _currentUser.coins + 25,
-      streakDays: _currentUser.streakDays + 1,
-    );
+    _localStorage.write<String>('daily_reward_last_date', today);
+    _currentUser = _currentUser.copyWith(coins: _currentUser.coins + 25);
     notifyListeners();
     return true;
   }

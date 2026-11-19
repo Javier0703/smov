@@ -61,7 +61,7 @@ class HowToPlayScreen extends StatelessWidget {
                       ),
                       const Spacer(),
                       StatusBadge(
-                        label: '+${levelInfo.rewardCoins} monedas',
+                        label: '+${levelInfo.rewardCoins} Brújulas',
                         variant: StatusBadgeVariant.success,
                       ),
                     ],
@@ -82,7 +82,7 @@ class HowToPlayScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.md),
                   Text(
-                    'Pasos para superar la prueba',
+                    'Casillas para superar la prueba',
                     style: AppTypography.titleSmall.copyWith(
                       color: AppColors.brandPrimary,
                     ),

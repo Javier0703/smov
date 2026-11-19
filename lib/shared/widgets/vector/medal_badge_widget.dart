@@ -4,7 +4,7 @@ import '../../../core/theme/app_colors.dart';
 
 /// Tipos de medallas del Medallero (`Mi medallero` · 8 insignias de Figma).
 enum MedalType {
-  buenRumbo(1, 'Buen rumbo', Icons.explore_rounded, Color(0xFF19D8BD)),
+  buenRumbo(1, 'Buen rumbo', Icons.explore_rounded, Color(0xFF19D88D)),
   rosaVientos(
     2,
     'Rosa de los vientos',

@@ -24,7 +24,7 @@ class AppFormatters {
 class Formatters {
   const Formatters._();
 
-  static String coinsWithLabel(int coins) => '$coins monedas';
+  static String coinsWithLabel(int coins) => '$coins Brújulas';
 
   static String percentage(int pct) => '$pct%';
 

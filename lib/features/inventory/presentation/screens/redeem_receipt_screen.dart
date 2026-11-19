@@ -92,7 +92,7 @@ class RedeemReceiptScreen extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      'Saldo restante: ${receipt.remainingCoins} monedas',
+                      'Saldo restante: ${receipt.remainingCoins} Brújulas',
                       style: AppTypography.labelMedium.copyWith(
                         color: AppColors.brandPrimary,
                         fontWeight: FontWeight.w800,

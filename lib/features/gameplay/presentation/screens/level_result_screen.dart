@@ -155,7 +155,7 @@ class _CelebrationHeroCard extends StatelessWidget {
           Text(
             isFinal
                 ? AppStrings.grandExplorerSubtitle
-                : 'Has desbloqueado el logro "${result.achievementTitle}" y sumado monedas a tu mochila.',
+                : 'Has desbloqueado el logro "${result.achievementTitle}" y sumado Brújulas.',
             textAlign: TextAlign.center,
             style: AppTypography.bodyMedium.copyWith(
               color: AppColors.textMuted,
@@ -174,7 +174,7 @@ class _CelebrationHeroCard extends StatelessWidget {
             ),
             child: Text(
               result.coinsAwarded > 0
-                  ? '+${result.coinsAwarded} monedas ganadas · Saldo: ${result.totalCoinsAfter}'
+                  ? '+${result.coinsAwarded} Brújulas ganadas · Saldo: ${result.totalCoinsAfter}'
                   : 'Recompensa de sesión ya acreditada · Saldo: ${result.totalCoinsAfter}',
               style: AppTypography.labelMedium.copyWith(
                 color: AppColors.brandPrimary,

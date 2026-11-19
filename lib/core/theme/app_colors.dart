@@ -12,7 +12,15 @@ enum AppVisualPalette {
 }
 
 /// Tipo de paleta cromática seleccionable por el alumno en Inicio.
-enum AppPaletteType { oceanAdventure, warmMap, forestExpedition }
+enum AppPaletteType {
+  oceanAdventure('Aventura'),
+  warmMap('Pastel'),
+  forestExpedition('Calmado');
+
+  const AppPaletteType(this.label);
+
+  final String label;
+}
 
 /// Definición cromática de una paleta de aventura.
 class AppPaletteColors {
@@ -38,8 +46,8 @@ class AppColors {
   static const Color brandPrimary = Color(0xFF17257C);
   static const Color primaryContainer = Color(0xFF101B54); // uniform/navy
   static const Color inkStrong = Color(0xFF101B54);
-  static const Color secondary = Color(0xFF19D8BD); // brand/mint
-  static const Color brandAccent = Color(0xFF19D8BD);
+  static const Color secondary = Color(0xFF19D88D); // brand/mint
+  static const Color brandAccent = Color(0xFF19D88D);
   static const Color secondaryContainer = Color(0xFF29E1B4); // brand/mintLight
   static const Color brandHighlight = Color(0xFFAFC6DD); // brand/sky
   static const Color brandSky = Color(0xFFAFC6DD);
@@ -48,11 +56,11 @@ class AppColors {
   // Superficies y Fondos (Tokens Figma: surface/* & border/*)
   static const Color background = Color(0xFFF7F9FC); // surface/canvas
   static const Color surfaceCanvas = Color(0xFFF7F9FC);
-  static const Color surface = Color(0xFFFFFFFF); // surface/white
-  static const Color surfaceElevated = Color(0xFFFFFFFF);
+  static const Color surface = Color(0xFFFFFDF8); // surface/cream
+  static const Color surfaceElevated = Color(0xFFFFFDF8);
   static const Color surfaceVariant = Color(0xFFEEF1FA); // surface/soft
   static const Color surfaceMuted = Color(0xFFEEF1FA);
-  static const Color cardBackground = Color(0xFFFFFFFF);
+  static const Color cardBackground = Color(0xFFFFFDF8);
   static const Color borderDefault = Color(0xFFD9E3EE); // border/default
 
   // Textos e Iconos (Tokens Figma: text/*)
@@ -70,7 +78,7 @@ class AppColors {
   static const Color error = Color(0xFFD64045); // uniform/red
   static const Color danger = Color(0xFFD64045);
   static const Color errorSurface = Color(0xFFFDECEC);
-  static const Color info = Color(0xFF19D8BD);
+  static const Color info = Color(0xFF19D88D);
 
   // Tokens de Personaje / Avatar (Figma: character/* & uniform/*)
   static const Color characterSkinLight = Color(0xFFF3C9A8);
@@ -105,21 +113,21 @@ class AppColors {
     switch (type) {
       case AppPaletteType.oceanAdventure:
         return const AppPaletteColors(
-          name: 'Aventura Oceánica (Original)',
+          name: 'Aventura',
           primary: Color(0xFF17257C),
-          accent: Color(0xFF19D8BD),
+          accent: Color(0xFF19D88D),
           canvas: Color(0xFFF7F9FC),
         );
       case AppPaletteType.warmMap:
         return const AppPaletteColors(
-          name: 'Pergamino Cartográfico',
+          name: 'Pastel',
           primary: Color(0xFF1E295E),
           accent: Color(0xFF29E1B4),
-          canvas: Color(0xFFFCF8F0),
+          canvas: Color(0xFFFDF8F2),
         );
       case AppPaletteType.forestExpedition:
         return const AppPaletteColors(
-          name: 'Bosque Ibérico',
+          name: 'Calmado',
           primary: Color(0xFF153B50),
           accent: Color(0xFF23C450),
           canvas: Color(0xFFF3F8F5),

@@ -115,7 +115,7 @@ class LevelOptionCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      '+${level.rewardCoins} monedas al superar',
+                      '+${level.rewardCoins} Brújulas al superar',
                       style: AppTypography.labelSmall.copyWith(
                         color: AppColors.textMuted,
                       ),

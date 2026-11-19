@@ -40,7 +40,7 @@ class InventoryRepository {
         final missing = item.costCoins - userBefore.coins;
         return Error<RedeemReceiptModel>(
           ValidationFailure(
-            'Saldo insuficiente: te faltan $missing monedas para canjear ${item.name}.',
+            'Saldo insuficiente: te faltan $missing Brújulas para canjear ${item.name}.',
           ),
         );
       }

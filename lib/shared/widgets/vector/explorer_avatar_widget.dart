@@ -141,7 +141,7 @@ class _ExplorerAvatarPainter extends CustomPainter {
       case AvatarOutfit.redHoodie:
         return const Color(0xFFF39C12);
       case AvatarOutfit.navyPolo:
-        return const Color(0xFF19D8BD);
+        return const Color(0xFF19D88D);
     }
   }
 

@@ -131,7 +131,7 @@ class _CoinsBalanceHeaderCard extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'Gana +40 monedas por nivel superado y +300 en El gran reto.',
+                  'Gana +40 Brújulas por nivel superado y +300 en El gran reto.',
                   style: AppTypography.bodySmall.copyWith(
                     color: AppColors.textMuted,
                   ),

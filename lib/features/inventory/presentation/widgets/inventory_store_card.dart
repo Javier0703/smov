@@ -55,7 +55,7 @@ class InventoryStoreCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Coste: ${item.costCoins} monedas',
+                      'Coste: ${item.costCoins} Brújulas',
                       style: AppTypography.labelMedium.copyWith(
                         color: AppColors.brandPrimary,
                         fontWeight: FontWeight.w800,
@@ -80,8 +80,8 @@ class InventoryStoreCard extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           AppPrimaryButton(
             label: canAfford
-                ? 'Canjear por ${item.costCoins} monedas'
-                : 'Te faltan $missing monedas',
+                ? 'Canjear por ${item.costCoins} Brújulas'
+                : 'Te faltan $missing Brújulas',
             icon: canAfford
                 ? Icons.shopping_bag_outlined
                 : Icons.lock_clock_rounded,
