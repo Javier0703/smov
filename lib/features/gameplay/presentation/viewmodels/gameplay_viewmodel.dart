@@ -199,13 +199,24 @@ class GameplayViewModel extends ChangeNotifier {
       (_explorerCoord.row + dRow).clamp(0, 4),
       (_explorerCoord.col + dCol).clamp(0, 4),
     );
-    return handleGridCellTap(nextCoord);
+    return handleGridCellTap(nextCoord, fromCardinalButton: true);
   }
 
   /// Interacción al tocar una casilla `(row, col)` del tablero.
-  Future<bool> handleGridCellTap(GridCoord coord) async {
+  Future<bool> handleGridCellTap(
+    GridCoord coord, {
+    bool fromCardinalButton = false,
+  }) async {
     final round = currentRound;
     if (round == null) return false;
+    if (_activeGame?.id == 'rumbo_desconocido' &&
+        round.mechanic == ChallengeMechanicType.gridNavigation &&
+        !fromCardinalButton) {
+      _feedbackMessage = 'En Rumbo desconocido debes usar los botones de los puntos cardinales.';
+      _isFeedbackPositive = false;
+      notifyListeners();
+      return false;
+    }
     _isFunnyDetourActive = false;
     _funnyDetourMessage = null;
 

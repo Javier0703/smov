@@ -18,6 +18,8 @@ class GridExpeditionBoard extends StatelessWidget {
     required this.avatarConfig,
     required this.showHintTarget,
     required this.showCompassBoost,
+    this.allowTargetReveal = true,
+    this.allowCellTap = true,
     required this.onCellTap,
     required this.onDirectionMove,
     this.placedSymbols = const <GridCoord, String>{},
@@ -30,6 +32,8 @@ class GridExpeditionBoard extends StatelessWidget {
   final AvatarConfig avatarConfig;
   final bool showHintTarget;
   final bool showCompassBoost;
+  final bool allowTargetReveal;
+  final bool allowCellTap;
   final ValueChanged<GridCoord> onCellTap;
   final ValueChanged<CardinalDirection> onDirectionMove;
   final Map<GridCoord, String> placedSymbols;
@@ -40,9 +44,10 @@ class GridExpeditionBoard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final showTargetDirectly =
-        round.mechanic == ChallengeMechanicType.gridNavigation ||
-        round.mechanic == ChallengeMechanicType.gridTimedPath ||
-        showHintTarget;
+        allowTargetReveal &&
+        (round.mechanic == ChallengeMechanicType.gridNavigation ||
+            round.mechanic == ChallengeMechanicType.gridTimedPath ||
+            showHintTarget);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -111,12 +116,15 @@ class GridExpeditionBoard extends StatelessWidget {
                         ),
                         isVisited: visitedCoords.contains(GridCoord(row, col)),
                         isHintHighlighted:
+                            allowTargetReveal &&
                             showHintTarget &&
                             round.targetCoord.row == row &&
                             round.targetCoord.col == col,
                         avatarConfig: avatarConfig,
                         mechanic: round.mechanic,
-                        onTap: () => onCellTap(GridCoord(row, col)),
+                        onTap: allowCellTap
+                            ? () => onCellTap(GridCoord(row, col))
+                            : null,
                         placedSymbol: placedSymbols[GridCoord(row, col)],
                         onSymbolPlaced: onSymbolPlaced,
                       ),
@@ -161,7 +169,7 @@ class _GridCellItem extends StatelessWidget {
   final bool isHintHighlighted;
   final AvatarConfig avatarConfig;
   final ChallengeMechanicType mechanic;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final String? placedSymbol;
   final void Function(String symbol, GridCoord coord)? onSymbolPlaced;
 

@@ -291,6 +291,8 @@ class _GridChallengeWrapperBoard extends StatelessWidget {
           avatarConfig: viewModel.currentUser.avatarConfig,
           showHintTarget: viewModel.isHintRevealed,
           showCompassBoost: viewModel.isCompassBoostActive,
+          allowTargetReveal: viewModel.activeGame?.id != 'rumbo_desconocido',
+          allowCellTap: viewModel.activeGame?.id != 'rumbo_desconocido',
           onCellTap: (coord) async {
             final finished = await viewModel.handleGridCellTap(coord);
             onFinishedCheck(finished);

@@ -77,7 +77,10 @@ void main() {
         isFalse,
       );
       expect(deps.gameplayViewModel.currentRoundIndex, 0);
-      expect(deps.gameplayViewModel.feedbackMessage, contains('una casilla'));
+      expect(
+        deps.gameplayViewModel.feedbackMessage,
+        contains('botones de los puntos cardinales'),
+      );
 
       deps.gameplayViewModel.startNewSession(game: game, levelNumber: 2);
       expect(
@@ -97,6 +100,12 @@ void main() {
       expect(
         deps.gameplayViewModel.rounds.any(
           (round) => round.instruction.contains('diagonal'),
+        ),
+        isTrue,
+      );
+      expect(
+        deps.gameplayViewModel.rounds.every(
+          (round) => !round.instruction.contains(RegExp(r'\b[ABCDE][1-5]\b')),
         ),
         isTrue,
       );
