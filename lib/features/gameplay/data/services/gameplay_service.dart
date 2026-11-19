@@ -343,6 +343,7 @@ class GameplayService {
             GridCoord(2, 2),
             GridCoord(2, 3),
           ],
+            obstacleType: GridObstacleType.river,
         ),
       ];
     }
@@ -362,6 +363,7 @@ class GameplayService {
           GridCoord(2, 2),
           GridCoord(2, 3),
         ],
+        obstacleType: GridObstacleType.park,
       ),
     ];
   }

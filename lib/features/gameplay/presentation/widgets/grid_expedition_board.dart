@@ -114,6 +114,7 @@ class GridExpeditionBoard extends StatelessWidget {
                         isObstacle: round.obstacles.contains(
                           GridCoord(row, col),
                         ),
+                        obstacleType: round.obstacleType,
                         isVisited: visitedCoords.contains(GridCoord(row, col)),
                         isHintHighlighted:
                             allowTargetReveal &&
@@ -162,6 +163,7 @@ class _GridCellItem extends StatelessWidget {
     required this.isTargetHere,
     required this.showTargetFlag,
     required this.isObstacle,
+    required this.obstacleType,
     required this.isVisited,
     required this.isHintHighlighted,
     required this.landmark,
@@ -177,6 +179,7 @@ class _GridCellItem extends StatelessWidget {
   final bool isTargetHere;
   final bool showTargetFlag;
   final bool isObstacle;
+  final GridObstacleType obstacleType;
   final bool isVisited;
   final bool isHintHighlighted;
   final GridLandmark? landmark;
@@ -245,9 +248,15 @@ class _GridCellItem extends StatelessWidget {
                     ),
                   ),
                   if (isObstacle)
-                    const Icon(
-                      Icons.landscape_rounded,
-                      color: AppColors.textMuted,
+                    Icon(
+                      switch (obstacleType) {
+                        GridObstacleType.rock => Icons.landscape_rounded,
+                        GridObstacleType.river => Icons.water_rounded,
+                        GridObstacleType.park => Icons.park_rounded,
+                      },
+                      color: obstacleType == GridObstacleType.river
+                          ? AppColors.brandSky
+                          : AppColors.textMuted,
                       size: 24,
                     )
                   else if (landmark != null)

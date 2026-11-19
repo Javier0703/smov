@@ -29,6 +29,12 @@ enum GridLandmark {
   final String label;
 }
 
+enum GridObstacleType {
+  rock,
+  river,
+  park,
+}
+
 /// Hito concreto y su posición dentro de una ronda.
 class GridLandmarkPlacement {
   const GridLandmarkPlacement(this.coord, this.landmark);
@@ -73,6 +79,7 @@ class GameRoundChallenge {
     this.clues = const <String>[],
     this.symbolLabel = 'Cumbre',
     this.landmarks = const <GridLandmarkPlacement>[],
+    this.obstacleType = GridObstacleType.rock,
   });
 
   final int roundNumber;
@@ -93,6 +100,7 @@ class GameRoundChallenge {
   final List<String> clues;
   final String symbolLabel;
   final List<GridLandmarkPlacement> landmarks;
+  final GridObstacleType obstacleType;
 
   GridLandmark? landmarkAt(GridCoord coord) {
     for (final placement in landmarks) {
