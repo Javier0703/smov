@@ -18,11 +18,13 @@ class AuthViewModel extends ChangeNotifier {
   String? _errorMessage;
   AuthSessionModel? _session;
   String _selectedClassId = '4.º A';
+  String _explorerName = '';
 
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   AuthSessionModel? get session => _session;
   String get selectedClassId => _selectedClassId;
+  String get explorerName => _explorerName;
   UserModel? get currentUser => _session?.user;
   List<String> get availableClasses =>
       _session?.availableClasses ?? const <String>['4.º A', '4.º B', '5.º A'];
@@ -33,6 +35,7 @@ class AuthViewModel extends ChangeNotifier {
       case Success<AuthSessionModel>(:final data):
         _session = data;
         _selectedClassId = data.selectedClassId;
+        _explorerName = data.user.displayName;
         _errorMessage = null;
       case Error<AuthSessionModel>(:final failure):
         _errorMessage = failure.message;
@@ -46,15 +49,27 @@ class AuthViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setExplorerName(String value) {
+    _explorerName = value;
+    _errorMessage = null;
+    notifyListeners();
+  }
+
   Future<bool> enterAsStudent() async {
-    return _signIn(role: RoleEnum.estudiante);
+    final name = _explorerName.trim();
+    if (name.isEmpty) {
+      _errorMessage = 'Escribe un nombre para tu explorador.';
+      notifyListeners();
+      return false;
+    }
+    return _signIn(role: RoleEnum.estudiante, customName: name);
   }
 
   Future<bool> enterAsTeacher() async {
     return _signIn(role: RoleEnum.docente);
   }
 
-  Future<bool> _signIn({required RoleEnum role}) async {
+  Future<bool> _signIn({required RoleEnum role, String? customName}) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -62,6 +77,7 @@ class AuthViewModel extends ChangeNotifier {
     final result = await _repository.enterWithRole(
       role: role,
       classId: _selectedClassId,
+      customName: customName,
     );
 
     _isLoading = false;

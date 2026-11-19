@@ -51,6 +51,7 @@ class GameplayViewModel extends ChangeNotifier {
   GameSessionResultModel? _lastResult;
   Timer? _sessionTimer;
   int _remainingSeconds = 120;
+  bool _isSessionComplete = false;
   final Map<GridCoord, String> _placedCartographySymbols =
       <GridCoord, String>{};
 
@@ -117,6 +118,8 @@ class GameplayViewModel extends ChangeNotifier {
     _currentRoundIndex = 0;
     _correctAnswers = 0;
     _totalAttempts = 0;
+    _lastResult = null;
+    _isSessionComplete = false;
     _bonusSeconds = 0;
     _completedRegionIds.clear();
     _newlyStampedCommunities.clear();
@@ -216,6 +219,18 @@ class GameplayViewModel extends ChangeNotifier {
 
     if (round.mechanic == ChallengeMechanicType.gridNavigation ||
         round.mechanic == ChallengeMechanicType.gridTimedPath) {
+      final rowDistance = (coord.row - _explorerCoord.row).abs();
+      final columnDistance = (coord.col - _explorerCoord.col).abs();
+      if (rowDistance > 1 ||
+          columnDistance > 1 ||
+          (rowDistance == 0 && columnDistance == 0)) {
+        _totalAttempts++;
+        _feedbackMessage = 'Avanza una casilla cada vez; no puedes saltar directamente al destino.';
+        _isFeedbackPositive = false;
+        notifyListeners();
+        return false;
+      }
+
       _explorerCoord = coord;
       if (!_visitedCoords.contains(coord)) {
         _visitedCoords.add(coord);
@@ -392,7 +407,7 @@ class GameplayViewModel extends ChangeNotifier {
       }
       final currentLastRegion = SpainMapCatalog.findById(currentLastId);
       final isNeighbor =
-          currentLastRegion?.neighbors.contains(region.id) ?? true;
+          currentLastRegion?.neighbors.contains(region.id) ?? false;
 
       if (!isNeighbor) {
         _totalAttempts++;
@@ -498,6 +513,7 @@ class GameplayViewModel extends ChangeNotifier {
       return false;
     }
 
+    _isSessionComplete = true;
     await finishCurrentSession();
     return true;
   }
@@ -505,6 +521,13 @@ class GameplayViewModel extends ChangeNotifier {
   Future<GameSessionResultModel?> finishCurrentSession() async {
     final game = _activeGame;
     if (game == null) return null;
+    if (!_isSessionComplete) {
+      _feedbackMessage =
+          'Completa todas las rondas antes de finalizar la misión.';
+      _isFeedbackPositive = false;
+      notifyListeners();
+      return null;
+    }
     _sessionTimer?.cancel();
     _sessionTimer = null;
 
@@ -521,8 +544,8 @@ class GameplayViewModel extends ChangeNotifier {
       achievementTitle: game.achievementTitle,
       medalNumber: game.medalNumber,
       levelNumber: _activeLevelNumber,
-      correctAnswers: _correctAnswers == 0 ? _rounds.length : _correctAnswers,
-      totalAttempts: _totalAttempts == 0 ? _rounds.length : _totalAttempts,
+      correctAnswers: _correctAnswers,
+      totalAttempts: _totalAttempts,
       durationSeconds: (85 - _bonusSeconds).clamp(35, 300),
       baseRewardCoins: rewardCoins,
       stampedCommunitiesEarned: _newlyStampedCommunities,

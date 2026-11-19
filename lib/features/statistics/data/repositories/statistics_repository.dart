@@ -13,7 +13,7 @@ class StatisticsRepository {
   Result<StudentActivityModel> loadStudentActivity() {
     try {
       final user = _service.getCurrentUser();
-      final sessions = _service.fetchStudentSessions('student_alex');
+      final sessions = _service.fetchStudentSessions(user.id);
 
       var sumCorrect = 0;
       var sumAttempts = 0;

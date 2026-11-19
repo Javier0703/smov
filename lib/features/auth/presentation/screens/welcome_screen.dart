@@ -48,13 +48,25 @@ class WelcomeScreen extends StatelessWidget {
                     children: [
                       WelcomeHeroCard(
                         avatarConfig: avatarConfig,
+                        explorerName: viewModel.explorerName,
                         selectedClassId: viewModel.selectedClassId,
                         availableClasses: viewModel.availableClasses,
                         onClassSelected: viewModel.selectClass,
+                        onExplorerNameChanged: viewModel.setExplorerName,
                         onCustomizeAvatarTap: onOpenAvatarEditor,
                       ),
                       const SizedBox(height: AppSpacing.md),
                       const _WelcomeExpeditionPreviewCard(),
+                      if (viewModel.errorMessage != null) ...[
+                        const SizedBox(height: AppSpacing.sm),
+                        Text(
+                          viewModel.errorMessage!,
+                          textAlign: TextAlign.center,
+                          style: AppTypography.bodySmall.copyWith(
+                            color: AppColors.danger,
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: AppSpacing.lg),
                       AppPrimaryButton(
                         label: AppStrings.welcomeStartButton,
@@ -124,20 +136,25 @@ class _WelcomeExpeditionPreviewCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.xs),
-          const SpainVectorMapWidget(
-            completedRegionIds: <String>{
-              'castilla_y_leon',
-              'galicia',
-              'asturias',
-              'madrid',
-              'andalucia',
-            },
-            routeRegionIds: <String>[
-              'galicia',
-              'castilla_y_leon',
-              'madrid',
-              'andalucia',
-            ],
+          Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 350),
+              child: const SpainVectorMapWidget(
+                completedRegionIds: <String>{
+                  'castilla_y_leon',
+                  'galicia',
+                  'asturias',
+                  'madrid',
+                  'andalucia',
+                },
+                routeRegionIds: <String>[
+                  'galicia',
+                  'castilla_y_leon',
+                  'madrid',
+                  'andalucia',
+                ],
+              ),
+            ),
           ),
         ],
       ),

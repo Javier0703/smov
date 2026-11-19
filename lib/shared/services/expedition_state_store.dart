@@ -111,14 +111,14 @@ class ExpeditionStateStore extends ChangeNotifier {
   final LocalStorageService _localStorage;
 
   UserModel _currentUser = const UserModel(
-    id: 'student_alex',
-    displayName: 'Alex',
-    username: 'alex.4a',
+    id: 'student_new',
+    displayName: '',
+    username: '',
     role: RoleEnum.estudiante,
     classId: '4.º A',
     cicloEscolar: CicloEscolar.segundoCiclo,
-    coins: 240,
-    streakDays: 5,
+    coins: 0,
+    streakDays: 0,
     avatarConfig: AvatarConfig(
       presentation: AvatarPresentation.boy,
       hair: AvatarHair.shortHair,
@@ -134,42 +134,19 @@ class ExpeditionStateStore extends ChangeNotifier {
   String? _lastDailyRewardDate;
 
   /// Inventario actual del alumno (`magnifying_glass`, `hourglass`, `special_compass`).
-  final Map<String, int> _inventoryCounts = <String, int>{
-    'magnifying_glass': 2,
-    'hourglass': 1,
-    'special_compass': 1,
-  };
+  final Map<String, int> _inventoryCounts = <String, int>{};
 
   /// Comunidades autónomas con sello y postal desbloqueados en `Mi pasaporte`.
-  final Set<String> _stampedCommunities = <String>{
-    'castilla_y_leon',
-    'galicia',
-    'asturias',
-    'cantabria',
-    'madrid',
-    'andalucia',
-    'aragon',
-  };
+  final Set<String> _stampedCommunities = <String>{};
 
   /// Sellos de orientación cardinal (N, E, S, O) en Inicio.
-  final Set<String> _orientationStamps = <String>{'N', 'E', 'S', 'O'};
+  final Set<String> _orientationStamps = <String>{};
 
   /// Medallas desbloqueadas (1..8).
-  final Set<int> _unlockedMedalNumbers = <int>{1, 2, 3, 5, 7};
+  final Set<int> _unlockedMedalNumbers = <int>{};
 
   /// Niveles superados por el alumno en cada juego (`gameId` -> `Set<int>`).
-  final Map<String, Set<int>> _completedLevelsByGame = <String, Set<int>>{
-    'rumbo_desconocido': <int>{1, 2},
-    'brujula_perdida': <int>{1, 2},
-    'encuentra_lugar': <int>{1, 2},
-    'llegar_a_tiempo': <int>{1},
-    'tesoro_secreto': <int>{1, 2},
-    'construye_mapa': <int>{1},
-    'donde_estoy': <int>{1, 2},
-    'espana_en_tus_manos': <int>{1},
-    'viaje_por_espana': <int>{1},
-    'gran_reto': <int>{},
-  };
+  final Map<String, Set<int>> _completedLevelsByGame = <String, Set<int>>{};
 
   /// Política docente de niveles habilitados por clase y juego (`classId` -> `gameId` -> `Set<int>`).
   final Map<String, Map<String, Set<int>>> _enabledLevelsByClass =
@@ -222,6 +199,7 @@ class ExpeditionStateStore extends ChangeNotifier {
     _courseGradeByClass['4.º B'] = 4;
 
     _sessions.addAll(const <SessionRecord>[
+      // Historial de ejemplo del aula; no pertenece al perfil nuevo.
       SessionRecord(
         sessionId: 'seed_alex_1',
         studentId: 'student_alex',
@@ -274,7 +252,7 @@ class ExpeditionStateStore extends ChangeNotifier {
         coinsEarned: 40,
         completedAtIso: 'Ayer · 16:05',
       ),
-      // Otros alumnos de 4.º A para tabla ponderada del Espacio Docente
+      // Otros alumnos de 4.º A para tabla ponderada del Espacio Docente.
       SessionRecord(
         sessionId: 'seed_lucia_1',
         studentId: 'student_lucia',
@@ -367,8 +345,7 @@ class ExpeditionStateStore extends ChangeNotifier {
       totalCompleted += levels.length;
     }
     // 10 juegos * 2 niveles base = 20 hitos principales
-    final pct = ((totalCompleted / 20.0) * 100).round();
-    return pct.clamp(12, 100);
+    return ((totalCompleted / 20.0) * 100).round().clamp(0, 100);
   }
 
   void setRole(RoleEnum role, {String? classId, String? displayName}) {
@@ -378,7 +355,7 @@ class ExpeditionStateStore extends ChangeNotifier {
       classId: selectedClassId,
       cicloEscolar: CicloEscolar.forClassId(selectedClassId),
       displayName:
-          displayName ?? (role == RoleEnum.docente ? 'Prof. Marta' : 'Alex'),
+          displayName ?? (role == RoleEnum.docente ? 'Prof. Marta' : ''),
     );
     notifyListeners();
   }

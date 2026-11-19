@@ -211,13 +211,13 @@ class UserModel {
     required this.id,
     required this.classId,
     required this.displayName,
-    this.username = 'alex.4a',
+    this.username = '',
     required this.role,
     this.cicloEscolar = CicloEscolar.segundoCiclo,
     required this.avatarConfig,
-    this.explorerLevel = 3,
-    this.streakDays = 2,
-    this.coins = 240,
+    this.explorerLevel = 1,
+    this.streakDays = 0,
+    this.coins = 0,
   });
 
   UserModel copyWith({
@@ -260,10 +260,10 @@ class UserModel {
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      id: json['id'] as String? ?? 'student_alex',
+      id: json['id'] as String? ?? 'student_new',
       classId: json['classId'] as String? ?? '4A',
-      displayName: json['displayName'] as String? ?? 'Alex',
-      username: json['username'] as String? ?? 'alex.4a',
+      displayName: json['displayName'] as String? ?? '',
+      username: json['username'] as String? ?? '',
       role: RoleEnum.values.firstWhere(
         (e) => e.name == json['role'],
         orElse: () => RoleEnum.estudiante,
@@ -271,9 +271,9 @@ class UserModel {
       avatarConfig: json['avatarConfig'] is Map<String, dynamic>
           ? AvatarConfig.fromJson(json['avatarConfig'] as Map<String, dynamic>)
           : const AvatarConfig(),
-      explorerLevel: json['explorerLevel'] as int? ?? 3,
-      streakDays: json['streakDays'] as int? ?? 2,
-      coins: json['coins'] as int? ?? 240,
+      explorerLevel: json['explorerLevel'] as int? ?? 1,
+      streakDays: json['streakDays'] as int? ?? 0,
+      coins: json['coins'] as int? ?? 0,
     );
   }
 }

@@ -4,6 +4,7 @@ import 'package:smov/core/di/app_dependencies.dart';
 import 'package:smov/features/adventures/data/models/adventure_game_model.dart';
 import 'package:smov/features/gameplay/data/models/gameplay_models.dart';
 import 'package:smov/shared/models/user_model.dart';
+import 'package:smov/shared/widgets/vector/compass_rose_widget.dart';
 import 'package:smov/shared/widgets/vector/spain_vector_map_widget.dart';
 
 void main() {
@@ -18,7 +19,47 @@ void main() {
       deps.dispose();
     });
 
-    test('Los tres niveles de Rumbo progresan de puntos cardinales a diagonales con obstáculos', () {
+    test('Un alumno nuevo empieza sin nombre ni progreso', () {
+      final user = deps.stateStore.currentUser;
+
+      expect(user.displayName, isEmpty);
+      expect(user.username, isEmpty);
+      expect(user.explorerLevel, 1);
+      expect(user.coins, 0);
+      expect(user.streakDays, 0);
+      expect(
+        deps.stateStore.completedLevelsForGame('rumbo_desconocido'),
+        isEmpty,
+      );
+      expect(deps.stateStore.stampedCommunities, isEmpty);
+      expect(deps.stateStore.orientationStamps, isEmpty);
+      expect(deps.stateStore.unlockedMedalNumbers, isEmpty);
+      expect(deps.stateStore.inventoryCounts, isEmpty);
+      expect(
+        deps.stateStore.sessions.where(
+          (session) => session.studentId == user.id,
+        ),
+        isEmpty,
+      );
+      expect(deps.stateStore.routeProgressPercent, 0);
+      expect(
+        deps.adventuresViewModel
+            .findGame('rumbo_desconocido')!
+            .completedLevelsCount,
+        0,
+      );
+    });
+
+    test('El alumno debe elegir un nombre antes de entrar', () async {
+      expect(await deps.authViewModel.enterAsStudent(), isFalse);
+      expect(deps.authViewModel.errorMessage, contains('nombre'));
+
+      deps.authViewModel.setExplorerName('  Luna  ');
+      expect(await deps.authViewModel.enterAsStudent(), isTrue);
+      expect(deps.stateStore.currentUser.displayName, 'Luna');
+    });
+
+    test('Los tres niveles de Rumbo progresan de puntos cardinales a diagonales con obstáculos', () async {
       final game = deps.adventuresViewModel.findGame('rumbo_desconocido')!;
 
       deps.gameplayViewModel.startNewSession(game: game, levelNumber: 1);
@@ -29,6 +70,14 @@ void main() {
         ),
         isTrue,
       );
+      expect(
+        await deps.gameplayViewModel.handleGridCellTap(
+          deps.gameplayViewModel.currentRound!.targetCoord,
+        ),
+        isFalse,
+      );
+      expect(deps.gameplayViewModel.currentRoundIndex, 0);
+      expect(deps.gameplayViewModel.feedbackMessage, contains('una casilla'));
 
       deps.gameplayViewModel.startNewSession(game: game, levelNumber: 2);
       expect(
@@ -291,9 +340,24 @@ void main() {
         final vm = deps.gameplayViewModel;
         vm.setCompassDirection(vm.currentRound!.targetDirection);
         await vm.submitCompassDirection();
-        await vm.handleGridCellTap(vm.currentRound!.targetCoord);
+        for (final coord in const <GridCoord>[
+          GridCoord(3, 0),
+          GridCoord(2, 1),
+          GridCoord(1, 2),
+        ]) {
+          await vm.handleGridCellTap(coord);
+        }
         await vm.placeCartographySymbol('Parque', const GridCoord(0, 3));
-        await vm.handleGridCellTap(vm.currentRound!.targetCoord);
+        for (final coord in const <GridCoord>[
+          GridCoord(3, 0),
+          GridCoord(2, 0),
+          GridCoord(1, 1),
+          GridCoord(1, 2),
+          GridCoord(1, 3),
+          GridCoord(1, 4),
+        ]) {
+          await vm.handleGridCellTap(coord);
+        }
         await vm.handleGridCellTap(vm.currentRound!.targetCoord);
         await vm.handleSpainRegionTap(
           SpainMapCatalog.findById(vm.currentRound!.targetRegionId)!,
@@ -378,7 +442,7 @@ void main() {
     });
 
     test('2. Idempotencia de recompensas: cerrar la misma sesión dos veces no duplica las monedas', () async {
-      final initialCoins = deps.stateStore.currentUser.coins; // 240
+      final initialCoins = deps.stateStore.currentUser.coins;
       final rumboGame = deps.adventuresViewModel.findGame('rumbo_desconocido')!;
 
       deps.gameplayViewModel.startNewSession(
@@ -387,7 +451,15 @@ void main() {
         customSessionId: 'idempotent_session_001',
       );
 
-      final firstResult = await deps.gameplayViewModel.finishCurrentSession();
+      expect(await deps.gameplayViewModel.finishCurrentSession(), isNull);
+      expect(deps.stateStore.currentUser.coins, equals(initialCoins));
+      for (var i = 0; i < 3; i++) {
+        await deps.gameplayViewModel.moveByDirection(CardinalDirection.n);
+      }
+      for (var i = 0; i < 2; i++) {
+        await deps.gameplayViewModel.moveByDirection(CardinalDirection.e);
+      }
+      final firstResult = deps.gameplayViewModel.lastResult;
       expect(firstResult, isNotNull);
       expect(firstResult!.coinsAwarded, equals(40));
       expect(deps.stateStore.currentUser.coins, equals(initialCoins + 40));
@@ -400,8 +472,18 @@ void main() {
     });
 
     test('3. Economía de Mi mochila: canje válido descuenta monedas e incrementa inventario; saldo insuficiente rechaza el canje', () async {
-      // Saldo inicial: 240 monedas, 2 lupas
-      expect(deps.inventoryViewModel.coinsBalance, equals(240));
+      expect(deps.inventoryViewModel.coinsBalance, 0);
+      expect(deps.stateStore.inventoryCounts, isEmpty);
+      await deps.stateStore.recordGameSession(
+        sessionId: 'earn_coins_for_shop',
+        gameId: 'rumbo_desconocido',
+        gameTitle: '¡Rumbo desconocido!',
+        level: 1,
+        correctAnswers: 1,
+        totalAttempts: 1,
+        durationSeconds: 60,
+        rewardCoins: 120,
+      );
 
       // Canjea 1 Lupa de pistas (coste 120 monedas)
       final receipt = await deps.inventoryViewModel.confirmRedeem(
@@ -409,8 +491,8 @@ void main() {
         customTransactionId: 'tx_lupa_1',
       );
       expect(receipt, isNotNull);
-      expect(receipt!.remainingCoins, equals(120));
-      expect(receipt.newOwnedCount, equals(3));
+      expect(receipt!.remainingCoins, 0);
+      expect(receipt.newOwnedCount, 1);
 
       // Intenta canjear Brújula especial (coste 300 monedas) con saldo 120
       final failedReceipt = await deps.inventoryViewModel.confirmRedeem(
@@ -419,10 +501,33 @@ void main() {
       );
       expect(failedReceipt, isNull);
       expect(deps.inventoryViewModel.errorMessage, contains('insuficiente'));
-      expect(deps.inventoryViewModel.coinsBalance, equals(120));
+      expect(deps.inventoryViewModel.coinsBalance, 0);
     });
 
     test('La tienda desbloquea cosméticos y exige la medalla requerida para el avatar especial', () async {
+      await deps.stateStore.recordGameSession(
+        sessionId: 'earn_coins_for_cosmetics',
+        gameId: 'rumbo_desconocido',
+        gameTitle: '¡Rumbo desconocido!',
+        level: 1,
+        correctAnswers: 1,
+        totalAttempts: 1,
+        durationSeconds: 60,
+        rewardCoins: 500,
+        unlockedMedalNumber: 2,
+      );
+      await deps.stateStore.recordGameSession(
+        sessionId: 'earn_medal_for_badge',
+        gameId: 'brujula_perdida',
+        gameTitle: 'La brújula perdida',
+        level: 1,
+        correctAnswers: 1,
+        totalAttempts: 1,
+        durationSeconds: 60,
+        rewardCoins: 0,
+        unlockedMedalNumber: 1,
+      );
+      deps.avatarViewModel.setExplorerName('Luna');
       final initialCoins = deps.inventoryViewModel.coinsBalance;
       deps.avatarViewModel.setSpecialStyle(AvatarSpecialStyle.goldenExplorer);
       expect(
@@ -445,6 +550,7 @@ void main() {
       expect(jacket, isNotNull);
       expect(deps.stateStore.currentUser.coins, equals(initialCoins - 100));
       deps.avatarViewModel.loadState();
+      deps.avatarViewModel.setExplorerName('Luna');
       expect(deps.avatarViewModel.ownedCosmetics, contains('explorer_jacket'));
       final badge = await deps.inventoryViewModel.confirmRedeem(
         'compass_badge',
@@ -452,6 +558,7 @@ void main() {
       );
       expect(badge, isNotNull);
       deps.avatarViewModel.loadState();
+      deps.avatarViewModel.setExplorerName('Luna');
       deps.avatarViewModel.setAccessory(AvatarAccessory.compassBadge);
       expect(await deps.avatarViewModel.saveChanges(), isTrue);
 
@@ -472,6 +579,7 @@ void main() {
       );
       expect(goldenAvatar, isNotNull);
       deps.avatarViewModel.loadState();
+      deps.avatarViewModel.setExplorerName('Luna');
       deps.avatarViewModel.setSpecialStyle(AvatarSpecialStyle.goldenExplorer);
       expect(await deps.avatarViewModel.saveChanges(), isTrue);
       expect(
@@ -482,10 +590,9 @@ void main() {
 
     test('4. Precisión ponderada: Mi actividad y Espacio docente calculan sum(correctAnswers) / sum(totalAttempts)', () {
       final activity = deps.statisticsViewModel.activity!;
-      // Semilla de Alex: (9+8+15+7) = 39 aciertos sobre (10+10+17+9) = 46 intentos -> 85%
-      expect(activity.totalCorrectAnswers, equals(39));
-      expect(activity.totalAttempts, equals(46));
-      expect(activity.weightedAccuracyPercent, equals(85));
+      expect(activity.totalCorrectAnswers, 0);
+      expect(activity.totalAttempts, 0);
+      expect(activity.weightedAccuracyPercent, 0);
     });
 
     test('5. Editor de avatar y Editor docente de preguntas validan y persisten cambios en vivo', () async {

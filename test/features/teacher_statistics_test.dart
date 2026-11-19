@@ -105,9 +105,9 @@ void main() {
         '4.º A',
       );
 
-      expect(studentActivity.totalSessionsCount, 4);
-      expect(studentActivity.totalCoinsEarned, 160);
-      expect(studentActivity.mostDifficultGameTitle, 'El tesoro secreto');
+      expect(studentActivity.totalSessionsCount, 0);
+      expect(studentActivity.totalCoinsEarned, 0);
+      expect(studentActivity.mostDifficultGameTitle, 'Sin datos suficientes');
       expect(classActivity.isSuccess, isTrue);
       final dashboard = classActivity.data!;
       expect(dashboard.completedChallengesCount, 66);

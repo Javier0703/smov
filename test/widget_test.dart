@@ -30,13 +30,18 @@ void main() {
           await tester.pumpAndSettle();
 
           expect(tester.takeException(), isNull);
+          await tester.enterText(
+            find.byKey(const ValueKey<String>('explorer-name-input')),
+            'Luna',
+          );
+          await tester.pumpAndSettle();
           await tester.ensureVisible(find.text(AppStrings.welcomeStartButton));
           await tester.pumpAndSettle();
           await tester.tap(find.text(AppStrings.welcomeStartButton));
           await tester.pumpAndSettle();
 
           expect(tester.takeException(), isNull);
-          expect(find.text('¡Hola, Alex!'), findsOneWidget);
+          expect(find.text('¡Hola, Luna!'), findsOneWidget);
         },
       );
 
@@ -56,19 +61,26 @@ void main() {
           expect(find.text(AppStrings.appBrandTag), findsOneWidget);
           expect(find.text(AppStrings.welcomeSubtitle), findsOneWidget);
           expect(find.text(AppStrings.welcomeStartButton), findsOneWidget);
+          await tester.enterText(
+            find.byKey(const ValueKey<String>('explorer-name-input')),
+            'Luna',
+          );
+          await tester.pumpAndSettle();
+          await tester.ensureVisible(find.text(AppStrings.welcomeStartButton));
+          await tester.pumpAndSettle();
 
           // Pulsa "Soy alumno · Empezar expedición"
           await tester.tap(find.text(AppStrings.welcomeStartButton));
           await tester.pumpAndSettle();
 
           // Verifica que estamos en Inicio — Pasaporte y progreso
-          expect(find.text('¡Hola, Alex!'), findsOneWidget);
+          expect(find.text('¡Hola, Luna!'), findsOneWidget);
           expect(
             find.text(AppStrings.homeOrientationStampsTitle),
             findsOneWidget,
           );
           expect(find.text(AppStrings.homeNextMissionBadge), findsOneWidget);
-          expect(find.text('240'), findsWidgets);
+          expect(find.text('0'), findsWidgets);
         },
       );
 

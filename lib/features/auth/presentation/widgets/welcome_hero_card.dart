@@ -14,16 +14,20 @@ class WelcomeHeroCard extends StatelessWidget {
   const WelcomeHeroCard({
     super.key,
     required this.avatarConfig,
+    required this.explorerName,
     required this.selectedClassId,
     required this.availableClasses,
     required this.onClassSelected,
+    required this.onExplorerNameChanged,
     required this.onCustomizeAvatarTap,
   });
 
   final AvatarConfig avatarConfig;
+  final String explorerName;
   final String selectedClassId;
   final List<String> availableClasses;
   final ValueChanged<String> onClassSelected;
+  final ValueChanged<String> onExplorerNameChanged;
   final VoidCallback onCustomizeAvatarTap;
 
   @override
@@ -79,9 +83,30 @@ class WelcomeHeroCard extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'Explorador Alex · $selectedClassId',
+                      'Nombre del explorador',
+                      style: AppTypography.labelMedium.copyWith(
+                        color: AppColors.textMuted,
+                      ),
+                    ),
+                    TextFormField(
+                      key: const ValueKey<String>('explorer-name-input'),
+                      initialValue: explorerName,
+                      maxLength: 24,
+                      textCapitalization: TextCapitalization.words,
+                      decoration: const InputDecoration(
+                        hintText: 'Elige un nombre',
+                        counterText: '',
+                        isDense: true,
+                      ),
                       style: AppTypography.titleMedium.copyWith(
                         color: AppColors.inkStrong,
+                      ),
+                      onChanged: onExplorerNameChanged,
+                    ),
+                    Text(
+                      'Clase $selectedClassId',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.textMuted,
                       ),
                     ),
                     const SizedBox(height: 4),
